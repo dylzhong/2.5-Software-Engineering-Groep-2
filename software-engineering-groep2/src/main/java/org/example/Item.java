@@ -25,12 +25,12 @@ public class Item {
         return details;
     }
 
-    @Override
-    public String toString() {
-        return "Medicijn{" +
-                "id='" + id + '\'' +
-                ", ndc='" + ndc + '\'' +
-                ", details='" + details + '\'' +
-                '}';
+    // Setters
+    public void setNdc(String ndc) {
+        this.ndc = ndc;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
     }
 }

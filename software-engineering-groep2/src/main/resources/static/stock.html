@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>?</title>
+        <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+        <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+        <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
+    </head>
+    <body onload="loadStock()">
+        <div class="container_main">
+            <div class="main">
+                <table class="cell-border row-border hover " id="table_stock">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>National Drug Code</th>
+                        <th>Details</th>
+                    </tr>
+                    </thead>
+                </table>
+                <button onclick="window.location.href='stock-add.html'">Add Item</button>
+                <button onclick="window.location.href='stock-edit.html'">Edit Item</button>
+            </div>
+        </div>
+        <script>
+            function loadStock() {
+                $.getJSON("/stock", function (data) {
+                    $('#table_stock').DataTable({
+                        "data": data,
+                        "columns": [
+                            {"data": "id"},
+                            {"data": "ndc"},
+                            {"data": "details"}
+                        ],
+                        columnDefs: [
+                            {
+                                targets: "_all",
+                                className: "dt-head-left dt-body-left"
+                            }
+                        ]
+                    });
+                });
+            }
+        </script>
+    </body>
+</html>
