@@ -53,8 +53,23 @@ public class StockController {
     }
 
     @GetMapping("/stock")
-    public List<Item> getStock() {
-        return stock;
+    public ResponseEntity<?> getStock() {
+        if (stock.isEmpty()) {
+            return ResponseEntity.ok("Item not found");
+        } else {
+            return ResponseEntity.ok(stock);
+        }
+    }
+
+    @GetMapping("/stock/get")
+    public ResponseEntity<?> getItemById(@RequestParam("id") String id) {
+        for (Item item : stock) {
+            if (item.getId().equals(id)) {
+                return ResponseEntity.ok(item);
+            }
+        }
+
+        return ResponseEntity.ok("Item not found");
     }
 
     @GetMapping("/stock/new")

@@ -8,7 +8,7 @@
     <body>
         <div class="container-main">
             <div class="main">
-                <form id="form-add-stock">
+                <form id="form-add">
                     <div class="form-group">
                         <label for="id">ID</label>
                         <input class="form-control" id="id" name="id" type="text" autocomplete="off" required>
@@ -39,7 +39,7 @@
             function addItemToStock(event) {
                 event.preventDefault();
 
-                const form = document.getElementById("form-add-stock");
+                const form = document.getElementById("form-add");
 
                 if (!form.checkValidity()) {
                     form.reportValidity();
