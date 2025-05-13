@@ -16,30 +16,41 @@
                         <th>ID</th>
                         <th>National Drug Code</th>
                         <th>Details</th>
+                        <th>Amount</th>
                     </tr>
                     </thead>
                 </table>
                 <button onclick="window.location.href='stock-add.html'">Add Item</button>
                 <button onclick="window.location.href='stock-edit.html'">Edit Item</button>
+                <button type="button" onclick="window.location.href='index.html'">Terug</button>
             </div>
         </div>
         <script>
             function loadStock() {
-                $.getJSON("/stock", function (data) {
-                    $('#table_stock').DataTable({
-                        "data": data,
-                        "columns": [
-                            {"data": "id"},
-                            {"data": "ndc"},
-                            {"data": "details"}
-                        ],
-                        columnDefs: [
-                            {
-                                targets: "_all",
-                                className: "dt-head-left dt-body-left"
-                            }
-                        ]
-                    });
+                $.ajax({
+                    url: "/stock",
+                    method: "GET",
+                    dataType: "json",
+                    success: function(data) {
+                        $('#table_stock').DataTable({
+                            data: data,
+                            columns: [
+                                { data: "id" },
+                                { data: "ndc" },
+                                { data: "details" },
+                                { data: "amount" }
+                            ],
+                            columnDefs: [
+                                {
+                                    targets: "_all",
+                                    className: "dt-head-left dt-body-left"
+                                }
+                            ]
+                        });
+                    },
+                    error: function() {
+                        alert("An error occurred while loading the stock.");
+                    }
                 });
             }
         </script>

@@ -27,11 +27,15 @@
         </div>
         <div class="form-group">
             <label for="ndc">National Drug Code</label>
-            <input class="form-control" type="text" id="ndc" name="ndc" required>
+            <input class="form-control" type="text" id="ndc" name="ndc" autocomplete="off" required>
         </div>
         <div class="form-group">
             <label for="details">Details</label>
-            <input class="form-control" type="text" id="details" name="details" required>
+            <input class="form-control" type="text" id="details" name="details" autocomplete="off" required>
+        </div>
+        <div class="form-group">
+            <label for="amount">Amount</label>
+            <input class="form-control" type="number" id="amount" name="amount" autocomplete="off" required>
         </div>
         <button type="button" onclick="editItem()" class="button">Bewerk</button>
         <button type="button" onclick="deleteItem()" class="button">Verwijder</button>
@@ -44,7 +48,7 @@
         $.getJSON("/stock", function(data) {
             let selectCode = "<option></option>";
             data.forEach((item) => {
-                selectCode += `<option value="${item.id}">${item.ndc}: ${item.details}</option>`;
+                selectCode += `<option value="${item.id}">${item.ndc}, ${item.details}</option>`;
             });
 
             const select = document.getElementById("select_id");
@@ -53,7 +57,7 @@
 
                 $('#select_id').select2({
                     placeholder: "Typ om item te zoeken",
-                    allowClear: true,
+                    allowClear: false,
                     width: 'resolve'
                 }).on('change', function () {
                     showItemData();
@@ -63,7 +67,6 @@
     }
 
     function showItemData() {
-        event.preventDefault();
         const form = document.getElementById("form-select");
         const formdata = new FormData(form);
         const id = formdata.get("select_id");
@@ -71,15 +74,24 @@
         const form2 = document.getElementById("form-edit");
         form2.style.display = "block";
 
-        $.getJSON(`/stock/get`, { id: id }, function(item) {
-            document.getElementById("id").value = item.id;
-            document.getElementById("ndc").value = item.ndc;
-            document.getElementById("details").value = item.details;
+        $.ajax({
+            url: "/stock/get",
+            method: "GET",
+            dataType: "json",
+            data: { id: id },
+            success: function(item) {
+                document.getElementById("id").value = item.id;
+                document.getElementById("ndc").value = item.ndc;
+                document.getElementById("details").value = item.details;
+                document.getElementById("amount").value = item.amount;
+            },
+            error: function() {
+                alert("An error occurred while loading the item data.");
+            }
         });
     }
 
     function editItem() {
-        event.preventDefault();
         const formEdit = document.getElementById("form-edit");
 
         if (!formEdit.checkValidity()) {
@@ -90,13 +102,21 @@
         const item = {
             id: document.getElementById("id").value,
             ndc: document.getElementById("ndc").value,
-            details: document.getElementById("details").value
+            details: document.getElementById("details").value,
+            amount: document.getElementById("amount").value
         };
 
-        $.get("/stock/edit", item, function(data) {
-            console.log("Item bijgewerkt:", data);
-            alert("Item was successfully updated");
-            window.location.reload();
+        $.ajax({
+            url: "/stock/edit",
+            method: "PUT",
+            data: item,
+            success: function(data) {
+                alert(data);
+                window.location.reload();
+            },
+            error: function() {
+                alert("An error occurred while updating the item.");
+            }
         });
     }
 
@@ -104,10 +124,17 @@
         event.preventDefault();
         const id = document.getElementById("id").value;
 
-        $.get("/stock/delete", { id: id }, function(data) {
-            console.log(data);
-            alert("Item was successfully deleted");
-            window.location.reload();
+        $.ajax({
+            url: "/stock/delete",
+            method: "DELETE",
+            data: { id: id },
+            success: function(data) {
+                alert(data);
+                window.location.reload();
+            },
+            error: function() {
+                alert("An error occurred while deleting the item.");
+            }
         });
     }
 </script>
