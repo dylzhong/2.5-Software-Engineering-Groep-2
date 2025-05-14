@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>?</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
+    <!--Stock -->
+    <link href="request.css" rel="stylesheet">
+
+</head>
+<body onload="loadRequest();">
+    <div class="container-table">
+        <form id="form-table" autocomplete="off">
+            <table id="table-request">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>National Drug Code</th>
+                    <th>Details</th>
+                    <th>Amount</th>
+                    <th>Action</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <button type="button" onclick="openPopUp()" class="button">Add item</button>
+            <button type="button" onclick="window.location.href='index.html'">Home</button>
+        </form>
+    </div>
+
+    <div id="overlay"></div>
+    <div id="popUp">
+        <h3>Add new request</h3>
+        <form id="form-select">
+            <label for="select-id">Selecteer bestaand item</label><br>
+            <select class="form-control" id="select-id" name="select-id"></select>
+        </form>
+        <form id="form-add" autocomplete="off">
+            <label for="id">ID:</label><br>
+            <input type="text" id="id" required><br>
+            <label for="ndc">NDC:</label><br>
+            <input type="text" id="ndc" required><br>
+            <label for="details">Details:</label><br>
+            <input type="text" id="details" required><br>
+            <label for="amount">Amount:</label><br>
+            <input type="number" id="amount" required><br><br>
+
+            <button type="button" onclick="addItemtoRequest()">Submit</button>
+            <button type="button" onclick="closePopUp()">Cancel</button>
+        </form>
+    </div>
+
+    <script>
+        function loadRequest() {
+            $.ajax({
+                url: "/request",
+                method: "GET",
+                dataType: "json",
+                success: function(data) {
+                    const table = $('#table-request').DataTable({
+                        data: data,
+                        destroy: true,
+                        columns: [
+                            { data: "id" },
+                            { data: "ndc" },
+                            { data: "details" },
+                            { data: "amount" },
+                            {
+                                data: null,
+                                render: function (data, type, row) {
+                                    return `<button class="button-delete" data-id="${row.id}">Delete</button>`;
+                                },
+                                orderable: false
+                            }
+                        ],
+                        columnDefs: [
+                            {
+                                targets: '_all',
+                                className: "dt-head-left dt-body-left"
+                            }
+                        ],
+                        language: {
+                            emptyTable: "No requests"
+                        }
+                    });
+
+                    deleteItemInRequest(table);
+                },
+                error: function () {
+                    alert("Error loading request data.");
+                }
+            });
+        }
+
+        function deleteItemInRequest(table) {
+            $('#table-request').off('click', '.button-delete');
+            $('#table-request').on('click', '.button-delete', function (e) {
+                e.preventDefault();
+                const id = $(this).data('id');
+                const row = $(this).closest('tr');
+
+                if (confirm("Delete this request?")) {
+                    $.ajax({
+                        url: "/request/delete?id=" + encodeURIComponent(id),
+                        method: "DELETE",
+                        success: function () {
+                            alert("Request deleted.");
+                            table.row(row).remove().draw();
+                        },
+                        error: function () {
+                            alert("Error deleting request.");
+                        }
+                    });
+                }
+            });
+        }
+
+        function openPopUp() {
+            document.getElementById("popUp").style.display = "block";
+            document.getElementById("overlay").style.display = "block";
+            getItemIdSelectBox();
+        }
+
+        function closePopUp() {
+            document.getElementById("popUp").style.display = "none";
+            document.getElementById("overlay").style.display = "none";
+        }
+
+        function getItemIdSelectBox() {
+            $.getJSON("/stock", function(data) {
+                let selectCode = "<option></option>";
+                data.forEach((item) => {
+                    selectCode += `<option value="${item.id}">${item.ndc}, ${item.details}</option>`;
+                });
+
+                const select = document.getElementById("select-id");
+                if (select) {
+                    select.innerHTML = selectCode;
+
+                    $('#select-id').select2({
+                        placeholder: "Search...",
+                        allowClear: true,
+                        width: 'resolve',
+                        dropdownParent: $('#popUp')
+                    }).on('change', function () {
+                        showItem();
+                    });
+                }
+            });
+        }
+
+        function showItem() {
+            const form = document.getElementById("form-select");
+            const formdata = new FormData(form);
+            const id = formdata.get("select-id");
+
+            const form2 = document.getElementById("form-add");
+            form2.style.display = "block";
+
+            $.ajax({
+                url: "/stock/get",
+                method: "GET",
+                dataType: "json",
+                data: { id: id },
+                success: function(item) {
+                    document.getElementById("id").value = item.id;
+                    document.getElementById("ndc").value = item.ndc;
+                    document.getElementById("details").value = item.details;
+                    document.getElementById("amount").value = 1;
+                },
+                error: function() {
+                    alert("An error occurred while loading the item data.");
+                }
+            });
+        }
+
+        function addItemtoRequest() {
+            const id = document.getElementById("id").value;
+            const ndc = document.getElementById("ndc").value;
+            const details = document.getElementById("details").value;
+            const amount = document.getElementById("amount").value;
+
+            const form = document.getElementById("form-add");
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            $.ajax({
+                url: "/request/new",
+                method: "POST",
+                data: {
+                    id: id,
+                    ndc: ndc,
+                    details: details,
+                    amount: amount
+                },
+                success: function () {
+                    alert("Request added successfully.");
+                    closePopUp();
+                    loadRequest();
+                },
+                error: function (data) {
+                    if (data.status === 409) {
+                        alert("This item is already in the request.");
+                    } else {
+                        alert("An error occurred while adding the request.");
+                    }
+                }
+            });
+        }
+
+        document.getElementById("overlay").addEventListener("click", closePopUp);
+    </script>
+</body>
+</html>

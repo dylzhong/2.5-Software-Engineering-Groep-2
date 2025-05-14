@@ -2,7 +2,6 @@ package org.example;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,6 +14,7 @@ import java.util.List;
 public class Controller {
 
     private final List<Item> stock = new ArrayList<>();
+    private final List<Item> request = new ArrayList<>();
 
     public Controller() {
         try (InputStream fis = getClass().getClassLoader().getResourceAsStream("AMCVoorraad.xlsx")) {
@@ -32,7 +32,6 @@ public class Controller {
                 Cell excelNdc = row.getCell(0);
                 Cell excelId = row.getCell(1);
                 Cell excelDetails = row.getCell(2);
-                Cell excelAmount = row.getCell(3);
 
                 String id = getCellValueAsString(excelId);
                 String ndc = getCellValueAsString(excelNdc);
@@ -55,6 +54,8 @@ public class Controller {
         DataFormatter formatter = new DataFormatter();
         return formatter.formatCellValue(cell);
     }
+
+    //Stock
 
     @GetMapping("/stock")
     public ResponseEntity<List<Item>> getStock() {
@@ -80,12 +81,12 @@ public class Controller {
 
         for (Item item : stock) {
             if (item.getId().equals(id)) {
-                return ResponseEntity.status(409).body("Item already exists");
+                return ResponseEntity.status(409).build();
             }
         }
 
         stock.add(new Item(id, ndc, details, amount));
-        return ResponseEntity.status(201).body("Item successfully added.");
+        return ResponseEntity.status(201).build();
     }
 
     @PutMapping("/stock/edit")
@@ -100,11 +101,11 @@ public class Controller {
                 item.setNdc(ndc);
                 item.setDetails(details);
                 item.setAmount(amount);
-                return ResponseEntity.status(200).body("Item successfully updated");
+                return ResponseEntity.status(200).build();
             }
         }
 
-        return ResponseEntity.status(404).body("Item not found");
+        return ResponseEntity.status(404).build();
     }
 
     @DeleteMapping("/stock/delete")
@@ -120,7 +121,66 @@ public class Controller {
 
         if (target != null) {
             stock.remove(target);
-            return ResponseEntity.status(200).body("Item successfully deleted");
+            return ResponseEntity.status(200).build();
+        }
+
+        return ResponseEntity.status(404).build();
+    }
+
+    //Request
+
+    @GetMapping("/request")
+    public ResponseEntity<List<Item>> getRequest() {
+        return ResponseEntity.status(200).body(request);
+    }
+
+    @GetMapping("/request/get")
+    public ResponseEntity<Item> getOrderById(@RequestParam("id") String id) {
+        for (Item item : request) {
+            if (item.getId().equals(id)) {
+                return ResponseEntity.status(200).body(item);
+            }
+        }
+        return ResponseEntity.status(404).build();
+    }
+
+    @PostMapping("/request/new")
+    public ResponseEntity<String> addOrderToRequest(@RequestParam("id") String id, @RequestParam("ndc") String ndc, @RequestParam("details") String details, @RequestParam("amount") int amount) {
+        for (Item item : request) {
+            if (item.getId().equals(id)) {
+                return ResponseEntity.ok("This item is already in the request");
+            }
+        }
+
+        for (Item item: stock) {
+            if (item.getId().equals(id)) {
+                if (item.getAmount() >= amount) {
+                    item.setAmount(item.getAmount() - amount);
+                    request.add(new Item(id, ndc, details, amount));
+                    return ResponseEntity.status(201).body("Order successfully added.");
+                } else {
+                    return ResponseEntity.status(409).body("Not enough stock available");
+                }
+            }
+        }
+
+        return ResponseEntity.status(404).body("Item not found in stock");
+    }
+
+    @DeleteMapping("/request/delete")
+    public ResponseEntity<String> deleteItemInRequest(@RequestParam("id") String id) {
+        Item target = null;
+
+        for (Item item : request) {
+            if (item.getId().equals(id)) {
+                target = item;
+                break;
+            }
+        }
+
+        if (target != null) {
+            request.remove(target);
+            return ResponseEntity.ok("Item deleted");
         }
 
         return ResponseEntity.status(404).body("Item not found");
