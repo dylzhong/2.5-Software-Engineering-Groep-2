@@ -11,12 +11,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-public class Controller {
+@RequestMapping("/api")
+public class StockController {
 
-    private final List<Item> stock = new ArrayList<>();
-    private final List<Item> request = new ArrayList<>();
+    private final List<Item> stockList = new ArrayList<>();
 
-    public Controller() {
+    public StockController() {
         try (InputStream fis = getClass().getClassLoader().getResourceAsStream("AMCVoorraad.xlsx")) {
             if (fis == null) {
                 System.out.println("Excel file not found");
@@ -37,7 +37,7 @@ public class Controller {
                 String ndc = getCellValueAsString(excelNdc);
                 String details = getCellValueAsString(excelDetails);
 
-                stock.add(new Item(id, ndc, details, 100));
+                stockList.add(new Item(id, ndc, details, 100));
             }
 
             workbook.close();
@@ -55,16 +55,14 @@ public class Controller {
         return formatter.formatCellValue(cell);
     }
 
-    //Stock
-
     @GetMapping("/stock")
-    public ResponseEntity<List<Item>> getStock() {
-        return ResponseEntity.status(200).body(stock);
+    public ResponseEntity<List<Item>> getStockList() {
+        return ResponseEntity.status(200).body(stockList);
     }
 
     @GetMapping("/stock/get")
     public ResponseEntity<Item> getItemById(@RequestParam("id") String id) {
-        for (Item item : stock) {
+        for (Item item : stockList) {
             if (item.getId().equals(id)) {
                 return ResponseEntity.status(200).body(item);
             }
@@ -79,13 +77,13 @@ public class Controller {
             @RequestParam("details") String details,
             @RequestParam("amount") int amount) {
 
-        for (Item item : stock) {
+        for (Item item : stockList) {
             if (item.getId().equals(id)) {
                 return ResponseEntity.status(409).build();
             }
         }
 
-        stock.add(new Item(id, ndc, details, amount));
+        stockList.add(new Item(id, ndc, details, amount));
         return ResponseEntity.status(201).build();
     }
 
@@ -96,7 +94,7 @@ public class Controller {
             @RequestParam("details") String details,
             @RequestParam("amount") int amount) {
 
-        for (Item item : stock) {
+        for (Item item : stockList) {
             if (item.getId().equals(id)) {
                 item.setNdc(ndc);
                 item.setDetails(details);
@@ -112,7 +110,7 @@ public class Controller {
     public ResponseEntity<String> deleteItemInStock(@RequestParam("id") String id) {
         Item target = null;
 
-        for (Item item : stock) {
+        for (Item item : stockList) {
             if (item.getId().equals(id)) {
                 target = item;
                 break;
@@ -120,69 +118,10 @@ public class Controller {
         }
 
         if (target != null) {
-            stock.remove(target);
+            stockList.remove(target);
             return ResponseEntity.status(200).build();
         }
 
         return ResponseEntity.status(404).build();
-    }
-
-    //Request
-
-    @GetMapping("/request")
-    public ResponseEntity<List<Item>> getRequest() {
-        return ResponseEntity.status(200).body(request);
-    }
-
-    @GetMapping("/request/get")
-    public ResponseEntity<Item> getOrderById(@RequestParam("id") String id) {
-        for (Item item : request) {
-            if (item.getId().equals(id)) {
-                return ResponseEntity.status(200).body(item);
-            }
-        }
-        return ResponseEntity.status(404).build();
-    }
-
-    @PostMapping("/request/new")
-    public ResponseEntity<String> addOrderToRequest(@RequestParam("id") String id, @RequestParam("ndc") String ndc, @RequestParam("details") String details, @RequestParam("amount") int amount) {
-        for (Item item : request) {
-            if (item.getId().equals(id)) {
-                return ResponseEntity.ok("This item is already in the request");
-            }
-        }
-
-        for (Item item: stock) {
-            if (item.getId().equals(id)) {
-                if (item.getAmount() >= amount) {
-                    item.setAmount(item.getAmount() - amount);
-                    request.add(new Item(id, ndc, details, amount));
-                    return ResponseEntity.status(201).body("Order successfully added.");
-                } else {
-                    return ResponseEntity.status(409).body("Not enough stock available");
-                }
-            }
-        }
-
-        return ResponseEntity.status(404).body("Item not found in stock");
-    }
-
-    @DeleteMapping("/request/delete")
-    public ResponseEntity<String> deleteItemInRequest(@RequestParam("id") String id) {
-        Item target = null;
-
-        for (Item item : request) {
-            if (item.getId().equals(id)) {
-                target = item;
-                break;
-            }
-        }
-
-        if (target != null) {
-            request.remove(target);
-            return ResponseEntity.ok("Item deleted");
-        }
-
-        return ResponseEntity.status(404).body("Item not found");
     }
 }

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+
+<h2>Welcome, <span sec:authentication="name">user</span>!</h2>
+
+<!-- Alleen klikbaar voor USER -->
+<form action="/request" method="get">
+    <button type="submit"
+            th:disabled="${not #authorization.expression('hasRole(''USER'')')}">
+        Nieuwe aanvraag
+    </button>
+</form>
+
+<!-- Alleen klikbaar voor ADMIN -->
+<form action="/manage" method="get">
+    <button type="submit"
+            th:disabled="${not #authorization.expression('hasRole(''ADMIN'')')}">
+        Aanvraag beheren
+    </button>
+</form>
+
+<!-- Alleen klikbaar voor ADMIN -->
+<form action="/stock" method="get">
+    <button type="submit"
+            th:disabled="${not #authorization.expression('hasRole(''ADMIN'')')}">
+        Manage voorraad
+    </button>
+</form>
+
+<!-- Logout -->
+<form th:action="@{/logout}" method="post">
+    <button type="submit">Logout</button>
+</form>
+
+</body>
+</html>

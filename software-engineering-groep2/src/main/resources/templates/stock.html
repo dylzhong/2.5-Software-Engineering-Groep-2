@@ -12,7 +12,7 @@
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
 
     <!--Stock -->
-    <link href="stock.css" rel="stylesheet">
+    <link href="/stock.css" rel="stylesheet">
 
 </head>
 <body onload="loadStock()">
@@ -31,7 +31,8 @@
                 <tbody></tbody>
             </table>
             <button type="button" onclick="openPopUp()">Add new item</button>
-            <button type="button" onclick=window.location.href='index.html'>Home</button>
+            <button type="button" onclick=window.location.href='/home'>Home</button>
+            <button onclick="location.reload()">Reload</button>
         </form>
     </div>
 
@@ -57,7 +58,7 @@
     <script>
         function loadStock() {
             $.ajax({
-                url: "/stock",
+                url: "/api/stock",
                 method: "GET",
                 dataType: "json",
                 success: function(data) {
@@ -125,7 +126,7 @@
                             row[columnName] = newValue;
 
                             $.ajax({
-                                url: "/stock/edit",
+                                url: "/api/stock/edit",
                                 method: "PUT",
                                 data: {
                                     id: row.id,
@@ -173,7 +174,7 @@
 
                 if (confirm("Are you sure you want to delete this item?")) {
                     $.ajax({
-                        url: "/stock/delete",
+                        url: "/api/stock/delete",
                         method: "DELETE",
                         data: { id: id },
                         success: function () {
@@ -212,7 +213,7 @@
             }
 
             $.ajax({
-                url: "/stock/new",
+                url: "/api/stock/new",
                 method: "POST",
                 data: {
                     id: id,
