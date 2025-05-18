@@ -3,18 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>Stock Overview</title>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
-
-    <!-- DataTables -->
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
-
-    <!--Stock -->
     <link href="/stock.css" rel="stylesheet">
-
 </head>
+
 <body onload="loadStock()">
     <div class="container-table">
         <form id="form-table" autocomplete="off">
@@ -32,11 +26,11 @@
             </table>
             <button type="button" onclick="openPopUp()">Add new item</button>
             <button type="button" onclick=window.location.href='/home'>Home</button>
-            <button onclick="location.reload()">Reload</button>
         </form>
     </div>
 
     <div id="overlay"></div>
+
     <div id="popUp">
         <h3>Add new item</h3>
         <form id="form-add" autocomplete="off">
@@ -89,15 +83,47 @@
                     editItemInStock(table);
                     deleteItemInStock(table);
                 },
-                error: function () {
-                    alert("An error occurred while loading the stock.");
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        }
+
+        function addItemToStock() {
+            const id = $('#id').val();
+            const ndc = $('#ndc').val();
+            const details = $('#details').val();
+            const amount = $('#amount').val();
+
+            const form = document.getElementById("form-add");
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            $.ajax({
+                url: "/api/stock/add",
+                method: "POST",
+                data: {
+                    id: id,
+                    ndc: ndc,
+                    details: details,
+                    amount: amount
+                },
+                success: function (data) {
+                    alert(data);
+                    closePopUp();
+                    loadStock();
+                },
+                error: function (data) {
+                    alert(data.responseText)
                 }
             });
         }
 
         function editItemInStock(table) {
             // Als iemand op een cel in de tabel klikt...
-            $('#table-stock tbody').on('click', 'td', function () {
+            $('#table-stock tbody').off('click', 'td').on('click', 'td', function () {
                 const column = table.cell(this).index().column;
 
                 //Skipt ID-kolom en Actie-kolom
@@ -134,11 +160,11 @@
                                     details: row.details,
                                     amount: row.amount
                                 },
-                                success: function () {
-                                    alert("Item updated successfully.");
+                                success: function (data) {
+                                    alert(data);
                                 },
-                                error: function () {
-                                    alert("An error occurred while saving changes.");
+                                error: function (data) {
+                                    alert(data.responseText);
                                 }
                             });
                         }
@@ -153,7 +179,7 @@
                     }
                 }
 
-                cell.on('keydown', handleKey);
+                cell.off('keydown').on('keydown', handleKey);
                 //Maak de cel bewerkbaar
                 cell.attr('contenteditable', 'true').focus();
             });
@@ -176,14 +202,14 @@
                     $.ajax({
                         url: "/api/stock/delete",
                         method: "DELETE",
-                        data: { id: id },
-                        success: function () {
-                            alert("Item deleted successfully.");
+                        data: {id: id},
+                        success: function (data) {
+                            alert(data);
                             // Verwijder de rij uit de tabel
                             table.row(row).remove().draw();
                         },
-                        error: function () {
-                            alert("An error occurred while deleting the item.");
+                        error: function (data) {
+                            alert(data.responseText);
                         }
                     });
                 }
@@ -198,42 +224,6 @@
         function closePopUp() {
             document.getElementById("popUp").style.display = "none";
             document.getElementById("overlay").style.display = "none";
-        }
-
-        function addItemToStock() {
-            const id = $('#id').val();
-            const ndc = $('#ndc').val();
-            const details = $('#details').val();
-            const amount = $('#amount').val();
-
-            const form = document.getElementById("form-add");
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
-            }
-
-            $.ajax({
-                url: "/api/stock/new",
-                method: "POST",
-                data: {
-                    id: id,
-                    ndc: ndc,
-                    details: details,
-                    amount: amount
-                },
-                success: function () {
-                    alert("Item added successfully.");
-                    closePopUp();
-                    loadStock();
-                },
-                error: function (data) {
-                    if (data.status === 409) {
-                        alert("Item already exists in stock.");
-                    } else {
-                        alert("An error occurred while adding the item");
-                    }
-                }
-            });
         }
 
         document.getElementById("overlay").addEventListener("click", closePopUp);

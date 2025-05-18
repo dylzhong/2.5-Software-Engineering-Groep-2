@@ -2,7 +2,7 @@ package org.example;
 
 public class Item {
 
-    private String id;
+    private final String id;
     private String ndc;
     private String details;
     private int amount;

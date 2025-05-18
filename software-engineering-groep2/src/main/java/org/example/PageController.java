@@ -8,12 +8,12 @@ public class PageController {
 
     @GetMapping("/")
     public String loginPage() {
-        return "index"; // toont index.html als login
+        return "index";
     }
 
     @GetMapping("/home")
     public String homePage() {
-        return "home"; // verwijst naar home.html
+        return "home";
     }
 
     @GetMapping("/request")
