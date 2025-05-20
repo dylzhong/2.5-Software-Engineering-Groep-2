@@ -10,6 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 public class SecurityConfig {
 
@@ -17,7 +20,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/css/**").permitAll()
+                        .requestMatchers("/", "/css/**").permitAll()
                         .requestMatchers("/api/**").hasAnyRole("USER", "ADMIN")
                         .requestMatchers("/request").hasRole("USER")
                         .requestMatchers("/manage", "/stock").hasRole("ADMIN")
@@ -25,31 +28,39 @@ public class SecurityConfig {
                 )
                 .csrf(csrf -> csrf.disable())
                 .formLogin(form -> form
-                        .loginPage("/")                     // index.html
-                        .loginProcessingUrl("/perform_login")
-                        .defaultSuccessUrl("/home", true)  // stuurt naar /home
+                        .loginPage("/")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/home", true)
                         .permitAll()
                 )
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/") // terug naar loginpagina
+                        .logoutSuccessUrl("/")
                 );
 
         return http.build();
     }
 
     @Bean
-    public UserDetailsService users() {
+    public UserDetailsService users(PasswordEncoder encoder) {
         return new InMemoryUserDetailsManager(
                 User.withUsername("user")
-                        .password(passwordEncoder().encode("user123"))
+                        .password(encoder.encode("user123"))
                         .roles("USER")
                         .build(),
                 User.withUsername("admin")
-                        .password(passwordEncoder().encode("admin123"))
+                        .password(encoder.encode("admin123"))
                         .roles("ADMIN")
                         .build()
         );
+    }
+
+    @Bean
+    public Map<String, Profile> userProfiles() {
+        Map<String, Profile> map = new HashMap<>();
+        map.put("user", new Profile("User naam", "Amsterdam"));
+        map.put("admin", new Profile("Admin naam", "Utrecht"));
+        return map;
     }
 
     @Bean

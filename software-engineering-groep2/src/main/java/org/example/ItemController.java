@@ -2,24 +2,29 @@ package org.example;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api")
 public class ItemController {
 
+    @Autowired
+    private Map<String, Profile> userProfiles;
+
     private final List<Item> stockList = new ArrayList<>();
-    private List<Item> temporaryList = new ArrayList<>();
-    private final Map<String, List<List<Item>>> requestMap = new HashMap<>();
+
+    private final Map<String, List<Request>> requestMap = new HashMap<>();
+
+    private Request temporaryRequest = new Request(null, null, null, new ArrayList<>(), null);
 
     public ItemController() {
         // Probeer het Excel-bestand 'AMCVoorraad.xlsx' te openen.
@@ -71,7 +76,7 @@ public class ItemController {
     //STOCK-MAPPINGS
 
     // Deze methode retourneert de voorraadlijst.
-    @GetMapping("/stock")
+    @GetMapping("/stock/all")
     public ResponseEntity<List<Item>> getStock() {
         return ResponseEntity.status(200).body(stockList);
     }
@@ -89,7 +94,7 @@ public class ItemController {
 
     // Deze methode voegt een nieuw item toe aan de voorraad.
     @PostMapping("/stock/add")
-    public ResponseEntity<String> addItemToStock(
+    public ResponseEntity<String> addItem(
             @RequestParam("id") String id,
             @RequestParam("ndc") String ndc,
             @RequestParam("details") String details,
@@ -111,7 +116,7 @@ public class ItemController {
 
     // Deze methode past een item in de voorraad aan.
     @PutMapping("/stock/edit")
-    public ResponseEntity<String> editItemInStock(
+    public ResponseEntity<String> editItem(
             @RequestParam("id") String id,
             @RequestParam("ndc") String ndc,
             @RequestParam("details") String details,
@@ -135,7 +140,7 @@ public class ItemController {
 
     // Deze methode verwijdert een item uit de voorraad op basis van het ID.
     @DeleteMapping("/stock/delete")
-    public ResponseEntity<String> deleteItemInStock(@RequestParam("id") String id) {
+    public ResponseEntity<String> deleteItem(@RequestParam("id") String id) {
         Item target = null;
 
         for (Item item : stockList) {
@@ -157,131 +162,209 @@ public class ItemController {
                 .body("Error: Item with the given ID was not found in stock.");
     }
 
-    //REQUEST-MAPPINGS
+    //ORDER-MAPPINGS
 
     // Deze methode retourneert de aanvraaglijst.
-    @GetMapping("/request")
-    public ResponseEntity<List<Item>> getRequest() {
-        return ResponseEntity.status(200).body(temporaryList);
+    @GetMapping("/order/all")
+    public ResponseEntity<List<Item>> getOrder() {
+        return ResponseEntity.ok(temporaryRequest.getItems());
     }
 
     // Haalt de meest recent ingediende aanvraaglijst op voor de huidige gebruiker.
-    @GetMapping("/request/recent")
-    public ResponseEntity<List<Item>> getRecentRequest() {
+    @GetMapping("/order/recent")
+    public ResponseEntity<List<Item>> getRecentOrder() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        List<List<Item>> requestList = requestMap.get(username);
+        List<Request> userRequests = requestMap.get(username);
 
-        if (requestList == null || requestList.isEmpty()) {
+        if (userRequests == null || userRequests.isEmpty()) {
             return ResponseEntity.status(404).body(null);
         }
 
-        List<Item> recentRequest = requestList.get(requestList.size() - 1);
-        temporaryList = new ArrayList<>(recentRequest);
-        return ResponseEntity.ok(temporaryList);
+        Request recent = userRequests.get(userRequests.size() - 1);
+        temporaryRequest = new Request(
+                recent.getName(),
+                recent.getLocation(),
+                recent.getDate(),
+                new ArrayList<>(recent.getItems()),
+                recent.getStatus()
+        );
+        return ResponseEntity.ok(temporaryRequest.getItems());
     }
 
     // Deze methode voegt een item toe aan de huidige aanvraaglijst, mits het in de voorraad zit en beschikbaar is.
-    @PostMapping("/request/add")
-    public ResponseEntity<String> addItemToRequest(
-            @RequestParam String id,
-            @RequestParam String ndc,
-            @RequestParam String details,
-            @RequestParam int amount) {
+    @PostMapping("/order/add")
+    public ResponseEntity<String> addOrder(
+            @RequestParam("id") String id,
+            @RequestParam("ndc") String ndc,
+            @RequestParam("details") String details,
+            @RequestParam("amount") int amount) {
 
-        // Controleer of het item al in de tijdelijke aanvraaglijst zit
-        for (Item i : temporaryList) {
+        for (Item i : temporaryRequest.getItems()) {
             if (i.getId().equals(id)) {
-                return ResponseEntity
-                        .status(409)
-                        .body("Error: This item is already in the current request.");
+                return ResponseEntity.status(409)
+                        .body("Error: This order is already in the current request.");
             }
         }
 
-        // Controleer of het item in de voorraad zit en of er voldoende beschikbaar is
         for (Item j : stockList) {
             if (j.getId().equals(id)) {
                 if (j.getAmount() >= amount) {
-                    temporaryList.add(new Item(id, ndc, details, amount));
-                    return ResponseEntity
-                            .status(201)
-                            .body("Item successfully added to the request.");
+                    temporaryRequest.getItems().add(new Item(id, ndc, details, amount));
+                    return ResponseEntity.status(201)
+                            .body("Order successfully added to the request.");
                 } else {
-                    return ResponseEntity
-                            .status(409)
-                            .body("Error: Not enough stock available for this item.");
+                    return ResponseEntity.status(409)
+                            .body("Error: Not enough stock available for this order.");
                 }
             }
         }
 
-        return ResponseEntity
-                .status(404)
-                .body("Error: Item with the given ID was not found in stock.");
+        return ResponseEntity.status(404)
+                .body("Error: Order with the given ID was not found in stock.");
     }
 
 
     // Deze methode verstuurt de aanvraaglijst en werkt de voorraad bij.
-    @PostMapping("/request/submit")
-    public ResponseEntity<String> submitListToRequest() {
-        // Haal de gebruikersnaam op uit de beveiligingscontext
+    @PostMapping("/order/submit")
+    public ResponseEntity<String> submitOrder() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Request> userRequests = requestMap.computeIfAbsent(username, key -> new ArrayList<>());
 
-        // Haal de bestaande aanvragenlijst op of maak er één aan voor de gebruiker
-        List<List<Item>> requestList = requestMap.computeIfAbsent(username, key -> new ArrayList<>());
+        if (temporaryRequest.getItems().isEmpty()) {
+            return ResponseEntity.status(400).body("Error: Request is empty.");
+        }
 
-        // Maak een kopie van de tijdelijke aanvraaglijst
-        List<Item> newRequest = new ArrayList<>(temporaryList);
-        requestList.add(newRequest);
+        List<Item> items = new ArrayList<>(temporaryRequest.getItems());
+        String now = LocalDateTime.now().format(DateTimeFormatter.ofPattern("E, dd MMM yyyy HH:mm", Locale.ENGLISH));
 
-        // Controleer voor elk item of er genoeg voorraad is en trek het af
-        for (Item i : newRequest) {
+        Profile profile = userProfiles.get(username);
+        Request request = new Request(profile.getName(), profile.getLocation(), now, items, "Pending");
+        userRequests.add(request);
+
+        // Trek voorraad af
+        for (Item i : items) {
             for (Item j : stockList) {
                 if (j.getId().equals(i.getId())) {
                     if (j.getAmount() < i.getAmount()) {
-                        return ResponseEntity
-                                .status(409)
-                                .body("Error: Not enough stock for item: " + i.getId());
+                        return ResponseEntity.status(409).body("Error: Not enough stock for item: " + i.getId());
                     }
-
                     j.setAmount(j.getAmount() - i.getAmount());
                     break;
                 }
             }
         }
 
-        // Maak de tijdelijke lijst leeg na succesvolle versturing
-        temporaryList.clear();
-
-        return ResponseEntity
-                .status(201)
-                .body("Request submitted and stock updated successfully.");
+        temporaryRequest.getItems().clear();
+        return ResponseEntity.status(201).body("Request submitted successfully.");
     }
 
     // Deze methode past het hoeveelheid van een item in de aanvraag.
-    @PutMapping("/request/edit")
-    public ResponseEntity<String> editAmountOfRequest(
+    @PutMapping("/order/edit")
+    public ResponseEntity<String> editOrder(
             @RequestParam("id") String id,
             @RequestParam("amount") int amount) {
 
-        for (Item i : temporaryList) {
+        for (Item i : temporaryRequest.getItems()) {
             if (i.getId().equals(id)) {
                 i.setAmount(amount);
-                return ResponseEntity
-                        .status(200)
-                        .body("Item successfully updated.");
+                return ResponseEntity.ok("Order successfully updated.");
             }
         }
 
-        return ResponseEntity
-                .status(404)
-                .body("Error: Item with the given ID was not found in stock.");
+        return ResponseEntity.status(404)
+                .body("Error: Order with the given ID was not found in the request.");
+    }
+
+    @DeleteMapping("/order/remove")
+    public ResponseEntity<String> removeOrder(@RequestParam("id") String id) {
+        Item toRemove = null;
+
+        for (Item i : temporaryRequest.getItems()) {
+            if (i.getId().equals(id)) {
+                toRemove = i;
+                break;
+            }
+        }
+
+        if (toRemove != null) {
+            temporaryRequest.getItems().remove(toRemove);
+            return ResponseEntity.ok("Order successfully removed from request.");
+        }
+
+        return ResponseEntity.status(404)
+                .body("Error: Order with the given ID was not found in the request.");
     }
 
     // Deze methode annuleert de huidige tijdelijke aanvraaglijst zonder wijzigingen in de voorraad.
-    @DeleteMapping("/request/cancel")
-    public ResponseEntity<String> cancelRecentRequest() {
-        temporaryList.clear();
-        return ResponseEntity
-                .status(200)
-                .body("Temporary request list cancelled successfully.");
+    @DeleteMapping("/order/cancel")
+    public ResponseEntity<String> cancelOrder() {
+        temporaryRequest.getItems().clear();
+        return ResponseEntity.ok("Request cancelled successfully.");
+    }
+
+    //MY REQUEST-MAPPING
+
+    @GetMapping("/request/user/all")
+    public ResponseEntity<List<Request>> getALlRequestForUser() {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Request> userRequests = requestMap.computeIfAbsent(username, key -> new ArrayList<>());
+
+        return ResponseEntity.ok(userRequests);
+    }
+
+    @GetMapping("/request/view")
+    public ResponseEntity<List<Item>> getRequestById(@RequestParam("id") String id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        boolean isAdmin = SecurityContextHolder.getContext().getAuthentication()
+                .getAuthorities()
+                .stream()
+                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
+
+        // Als admin → zoek in alle aanvragen van alle gebruikers
+        if (isAdmin) {
+            for (List<Request> userRequests : requestMap.values()) {
+                for (Request r : userRequests) {
+                    if (r.getId().equals(id)) {
+                        return ResponseEntity.ok(r.getItems());
+                    }
+                }
+            }
+        }
+
+        List<Request> userRequests = requestMap.get(username);
+        if (userRequests != null) {
+            for (Request r : userRequests) {
+                if (r.getId().equals(id)) {
+                    return ResponseEntity.ok(r.getItems());
+                }
+            }
+        }
+
+        return ResponseEntity.status(404).body(null);
+    }
+
+    @GetMapping("/request/admin/all")
+    public ResponseEntity<List<Request>> getAllRequestForAdmin() {
+        List<Request> allRequests = new ArrayList<>();
+
+        for (List<Request> userRequests : requestMap.values()) {
+            allRequests.addAll(userRequests);
+        }
+
+        return ResponseEntity.ok(allRequests);
+    }
+
+    @PostMapping("/request/admin/status")
+    public ResponseEntity<String> updateRequestStatus(@RequestParam UUID id, @RequestParam String status) {
+        for (List<Request> userRequests : requestMap.values()) {
+            for (Request r : userRequests) {
+                if (r.getId().equals(id.toString())) {
+                    r.setStatus(status);
+                    return ResponseEntity.ok("Status updated to " + status);
+                }
+            }
+        }
+        return ResponseEntity.status(404).body("Request not found");
     }
 }

@@ -16,13 +16,28 @@ public class PageController {
         return "home";
     }
 
-    @GetMapping("/request")
-    public String requestPage() {
-        return "request";
-    }
-
     @GetMapping("/stock")
     public String stockPage() {
         return "stock";
+    }
+
+    @GetMapping("/order")
+    public String requestPage() {
+        return "order";
+    }
+
+    @GetMapping("/request/user")
+    public String requestUserPage() {
+        return "request-user";
+    }
+
+    @GetMapping("/request/view")
+    public String requestUserDetailPage() {
+        return "request-view";
+    }
+
+    @GetMapping("/request/admin")
+    public String requestAdminPage() {
+        return "request-admin";
     }
 }

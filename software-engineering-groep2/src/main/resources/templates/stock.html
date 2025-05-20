@@ -12,7 +12,7 @@
 <body onload="loadStock()">
     <div class="container-table">
         <form id="form-table" autocomplete="off">
-            <table id="table-stock">
+            <table id="table-stock" class="row-border">
                 <thead>
                 <tr>
                     <th>ID</th>
@@ -43,7 +43,7 @@
             <label for="amount">Amount:</label><br>
             <input type="number" id="amount" required><br><br>
 
-            <button type="button" onclick="addItemToStock()">Submit</button>
+            <button type="button" onclick="addItem()">Submit</button>
             <button type="button" onclick="closePopUp()">Cancel</button>
         </form>
     </div>
@@ -52,7 +52,7 @@
     <script>
         function loadStock() {
             $.ajax({
-                url: "/api/stock",
+                url: "/api/stock/all",
                 method: "GET",
                 dataType: "json",
                 success: function(data) {
@@ -80,8 +80,8 @@
                         ]
                     });
 
-                    editItemInStock(table);
-                    deleteItemInStock(table);
+                    editItem(table);
+                    deleteItem(table);
                 },
                 error: function (data) {
                     alert(data.responseText);
@@ -89,7 +89,7 @@
             });
         }
 
-        function addItemToStock() {
+        function addItem() {
             const id = $('#id').val();
             const ndc = $('#ndc').val();
             const details = $('#details').val();
@@ -121,7 +121,7 @@
             });
         }
 
-        function editItemInStock(table) {
+        function editItem(table) {
             // Als iemand op een cel in de tabel klikt...
             $('#table-stock tbody').off('click', 'td').on('click', 'td', function () {
                 const column = table.cell(this).index().column;
@@ -185,7 +185,7 @@
             });
         }
 
-        function deleteItemInStock(table) {
+        function deleteItem(table) {
             $('#table-stock').off('click', '.button-delete');
             // Als iemand op een "Delete"-knop klikt in de tabel...
             $('#table-stock').on('click', '.button-delete', function (event) {

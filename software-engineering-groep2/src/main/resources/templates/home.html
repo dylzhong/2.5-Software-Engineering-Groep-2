@@ -11,22 +11,28 @@
 <h2>Welcome, <span sec:authentication="name">user</span>!</h2>
 
 <!-- Alleen klikbaar voor USER -->
-<form action="/request" method="get">
+<form action="/order" method="get">
     <button type="submit"
             th:disabled="${not #authorization.expression('hasRole(''USER'')')}">
         Nieuwe aanvraag
     </button>
 </form>
 
+<form action="/request/user" method="get">
+    <button type="submit"
+            th:disabled="${not #authorization.expression('hasRole(''USER'')')}">
+        My requests
+    </button>
+</form>
+
 <!-- Alleen klikbaar voor ADMIN -->
-<form action="/manage" method="get">
+<form action="/request/admin" method="get">
     <button type="submit"
             th:disabled="${not #authorization.expression('hasRole(''ADMIN'')')}">
         Aanvraag beheren
     </button>
 </form>
 
-<!-- Alleen klikbaar voor ADMIN -->
 <form action="/stock" method="get">
     <button type="submit"
             th:disabled="${not #authorization.expression('hasRole(''ADMIN'')')}">

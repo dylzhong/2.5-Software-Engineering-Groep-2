@@ -8,13 +8,13 @@
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="/request.css" rel="stylesheet">
+    <link href="/order.css" rel="stylesheet">
 
 </head>
-<body onload="loadRequest();">
+<body onload="loadOrder();">
     <div class="container-table">
         <form id="form-table" autocomplete="off">
-            <table id="table-request">
+            <table id="table-order" class="row-border">
                 <thead>
                 <tr>
                     <th>ID</th>
@@ -27,15 +27,15 @@
                 <tbody></tbody>
             </table>
             <button type="button" onclick="openPopUp()" class="button">Add item</button>
-            <button type="button" onclick="submitRequest()">Submit all requests</button>
-            <button type="button" onclick="loadRecentRequest()">Get most recent request</button>
-            <button type="button" onclick="cancelRequest()">Cancel</button>
+            <button type="button" onclick="submitOrder()">Submit all orders</button>
+            <button type="button" onclick="loadRecentOrder()">Get most recent order</button>
+            <button type="button" onclick="cancelOrder()">Cancel</button>
         </form>
     </div>
 
     <div id="overlay"></div>
     <div id="popUp">
-        <h3>Add new request</h3>
+        <h3>Add new order</h3>
         <form id="form-select">
             <label for="select-id">Selecteer bestaand item</label><br>
             <select class="form-control" id="select-id" name="select-id"></select>
@@ -50,19 +50,19 @@
             <label for="amount">Amount:</label><br>
             <input type="number" id="amount" required><br><br>
 
-            <button type="button" onclick="addItemtoRequest()">Add</button>
+            <button type="button" onclick="addOrder()">Add</button>
             <button type="button" onclick="closePopUp()">Cancel</button>
         </form>
     </div>
 
     <script>
-        function loadRequest() {
+        function loadOrder() {
             $.ajax({
-                url: "/api/request",
+                url: "/api/order/all",
                 method: "GET",
                 dataType: "json",
                 success: function(data) {
-                    const table = $('#table-request').DataTable({
+                    const table = $('#table-order').DataTable({
                         data: data,
                         destroy: true,
                         columns: [
@@ -73,7 +73,7 @@
                             {
                                 data: null,
                                 render: function (data, type, row) {
-                                    return `<button class="button-delete" data-id="${row.id}">Delete</button>`;
+                                    return `<button class="button-remove" data-id="${row.id}">Remove</button>`;
                                 },
                                 orderable: false
                             }
@@ -85,12 +85,12 @@
                             }
                         ],
                         language: {
-                            emptyTable: "No requests"
+                            emptyTable: "No orders"
                         }
                     });
 
-                    deleteItemInRequest(table);
-                    editAmountInRequest(table);
+                    removeOrder(table);
+                    editOrder(table);
                 },
                 error: function (data) {
                     alert(data);
@@ -98,13 +98,13 @@
             });
         }
 
-        function loadRecentRequest() {
+        function loadRecentOrder() {
             $.ajax({
-                url: "/api/request/recent",
+                url: "/api/order/recent",
                 method: "GET",
                 dataType: "json",
                 success: function (data) {
-                    const table = $('#table-request').DataTable({
+                    const table = $('#table-order').DataTable({
                         data: data,
                         destroy: true,
                         columns: [
@@ -115,7 +115,7 @@
                             {
                                 data: null,
                                 render: function (data, type, row) {
-                                    return `<button class="button-delete" data-id="${row.id}">Delete</button>`;
+                                    return `<button class="button-remove" data-id="${row.id}">Remove</button>`;
                                 },
                                 orderable: false
                             }
@@ -127,12 +127,12 @@
                             }
                         ],
                         language: {
-                            emptyTable: "No recent submitted request found."
+                            emptyTable: "No recent submitted order found."
                         }
                     });
 
-                    deleteItemInRequest(table);
-                    editAmountInRequest(table);
+                    removeOrder(table);
+                    editOrder(table);
                 },
                 error: function () {
                 }
@@ -140,7 +140,7 @@
         }
 
         function getItemIdSelectBox() {
-            $.getJSON("/api/stock", function(data) {
+            $.getJSON("/api/stock/all", function(data) {
                 let selectCode = "<option></option>";
                 data.forEach((item) => {
                     selectCode += `<option value="${item.id}">${item.ndc}, ${item.details}</option>`;
@@ -192,7 +192,7 @@
             });
         }
 
-        function addItemtoRequest() {
+        function addOrder() {
             const id = document.getElementById("id").value;
             const ndc = document.getElementById("ndc").value;
             const details = document.getElementById("details").value;
@@ -205,7 +205,7 @@
             }
 
             $.ajax({
-                url: "/api/request/add",
+                url: "/api/order/add",
                 method: "POST",
                 data: {
                     id: id,
@@ -216,7 +216,7 @@
                 success: function (data) {
                     alert(data);
                     closePopUp();
-                    loadRequest();
+                    loadOrder();
                 },
                 error: function (data) {
                     alert(data.responseText)
@@ -224,16 +224,16 @@
             });
         }
 
-        function deleteItemInRequest(table) {
-            $('#table-request').off('click', '.button-delete');
-            $('#table-request').on('click', '.button-delete', function (e) {
+        function removeOrder(table) {
+            $('#table-order').off('click', '.button-remove');
+            $('#table-order').on('click', '.button-remove', function (e) {
                 e.preventDefault();
                 const id = $(this).data('id');
                 const row = $(this).closest('tr');
 
-                if (confirm("Delete this request?")) {
+                if (confirm("Remove this order?")) {
                     $.ajax({
-                        url: "/api/request/delete?id=" + encodeURIComponent(id),
+                        url: "/api/order/remove?id=" + encodeURIComponent(id),
                         method: "DELETE",
                         success: function (data) {
                             alert(data);
@@ -247,17 +247,17 @@
             });
         }
 
-        function submitRequest() {
-            if (!confirm("Are you sure you want to submit all requests?")) {
+        function submitOrder() {
+            if (!confirm("Are you sure you want to submit all orders?")) {
                 return;
             }
 
             $.ajax({
-                url: "/api/request/submit",
+                url: "/api/order/submit",
                 method: "POST",
                 success: function (data) {
                     alert(data);
-                    loadRequest();
+                    loadOrder();
                 },
                 error: function (data) {
                     alert(data.responseText);
@@ -265,9 +265,9 @@
             });
         }
 
-        function cancelRequest() {
+        function cancelOrder() {
             $.ajax({
-                url: "/api/request/cancel",
+                url: "/api/order/cancel",
                 method: "DELETE",
                 success: function() {
                     window.location.href = "/home";
@@ -278,8 +278,8 @@
             });
         }
 
-        function editAmountInRequest(table) {
-            $('#table-request tbody').off('click', 'td').on('click', 'td', function () {
+        function editOrder(table) {
+            $('#table-order tbody').off('click', 'td').on('click', 'td', function () {
                 const column = table.cell(this).index().column;
                 const columnName = table.column(column).dataSrc();
 
@@ -311,7 +311,7 @@
 
                             // Stuur update naar de server
                             $.ajax({
-                                url: "/api/request/edit",
+                                url: "/api/order/edit",
                                 method: "PUT",
                                 data: {
                                     id: row.id,

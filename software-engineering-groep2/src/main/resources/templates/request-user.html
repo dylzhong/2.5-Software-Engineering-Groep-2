@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Requests</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
+    <link href="/request-user.css" rel="stylesheet">
+</head>
+<body onload="loadRequestOfUser();">
+<h2>My Requests</h2>
+
+<table id="table-request-user" class="row-border">
+    <thead>
+    <tr>
+        <th>Date</th>
+        <th>Status</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    function loadRequestOfUser() {
+        $.ajax({
+            url: "/api/request/user/all",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                const table = $('#table-request-user').DataTable({
+                    data: data,
+                    destroy: true,
+                    columns: [
+                        { data: "date" },
+                        { data: "status" }
+                    ],
+                    columnDefs: [
+                        {
+                            targets: '_all',
+                            className: "dt-head-left dt-body-left"
+                        }
+                    ],
+                    language: {
+                        emptyTable: "You have not submitted any requests yet."
+                    }
+                });
+
+                $('#table-request-user tbody').on('click', 'tr', function () {
+                    const rowData = table.row(this).data();
+                    if (!rowData || !rowData.id) return;
+                    window.location.href = `/request/view?id=${rowData.id}`;
+                });
+            },
+            error: function (data) {
+                alert(data.responseText);
+            }
+        });
+    }
+</script>
+</body>
+</html>

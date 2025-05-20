@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>All Requests</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
+    <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
+</head>
+<body onload="loadRequestOfAdmin();">
+<h2>All User Requests</h2>
+
+<table id="table-admin-request" class="row-border">
+    <thead>
+    <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    function loadRequestOfAdmin() {
+        $.ajax({
+            url: "/api/request/admin/all",
+            method: "GET",
+            dataType: "json",
+            success: function (data) {
+                table = $('#table-admin-request').DataTable({
+                    data: data,
+                    destroy: true,
+                    columns: [
+                        { data: "name" },
+                        { data: "location" },
+                        { data: "date" },
+                        { data: "status" },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                if (row.status === "Pending") {
+                                    return `
+                                        <button onclick="updateStatus('${row.id}', 'Approved')">Approve</button>
+                                        <button onclick="updateStatus('${row.id}', 'Rejected')">Reject</button>
+                                        `;
+                                } else {
+                                    return "-";
+                                }
+                            }
+                        }
+                    ],
+                    columnDefs: [
+                        {
+                            targets: '_all',
+                            className: "dt-head-left dt-body-left"
+                        }
+                    ],
+                    language: {
+                        emptyTable: "No user requests submitted yet."
+                    }
+                });
+
+                $('#table-admin-request tbody').on('click', 'tr', function (event) {
+                    if ($(event.target).closest('button').length > 0) return;
+
+                    const rowData = table.row(this).data();
+                    if (!rowData) return;
+
+                    const id = rowData.id;
+                    window.location.href = `/request/view?id=${id}`;
+                });
+
+                updateStatus(table);
+            },
+            error: function (data) {
+                alert(data.responseText);
+            }
+        });
+    }
+
+    function updateStatus(table) {
+        window.updateStatus = function (requestId, newStatus) {
+            $.ajax({
+                url: `/api/request/admin/status?id=${requestId}&status=${newStatus}`,
+                method: "POST",
+                success: function () {
+                    const row = table
+                        .row(function (idx, data) {
+                            return data.id === requestId;
+                        });
+
+                    if (row) {
+                        const rowData = row.data();
+                        rowData.status = newStatus;
+                        table.row(row).invalidate().draw(false);
+                    }
+
+                    alert(`Request ${newStatus.toLowerCase()} successfully.`);
+                },
+                error: function (data) {
+                    alert(data.responseText);
+                }
+            });
+        };
+    }
+</script>
+</body>
+</html>
