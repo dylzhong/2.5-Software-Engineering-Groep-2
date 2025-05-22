@@ -1,22 +1,193 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.top {
+    background-color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.top h2 {
+    font-size: 20px;
+    color: #333;
+    margin: 0;
+}
+
+.button-home {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.button-home:hover {
+    background-color: #0056b3;
+}
+
+.main {
+    box-sizing: border-box;
+    display: flex;
+    flex-grow: 1;
+    justify-content: center;
+    align-items: stretch;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+
+.container-card {
+    background-color: #f0f0f0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 1000px;
+    height: 100%;
+    gap: 30px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.container-table {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.button-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-datatable {
+    background-color: #007bff;
+    color: #f0f0f0;
+    flex: 1;
+    max-width: 250px;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+}
+
+.button-datatable:hover {
+    background-color: #0056b3;
+}
+
+.button-delete {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button-delete:hover {
+    background-color: #a71d2a;
+}
+
 #overlay {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* lichtgrijze waas */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
 }
 
 #popUp {
     display: none;
     position: fixed;
-    top: 20%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 20px;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    width: 400px;
+    max-width: 90vw;
+}
+
+#popUp h3 {
+    margin-top: 20px;
+    font-size: 20px;
+    color: black;
+    margin-bottom: 30px;
+}
+
+#popUp label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: -10px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#popUp input {
+    width: 100%;
+    padding:10px;
+    margin-top: 4px;
+    margin-bottom: 12px;
     border: 1px solid #ccc;
-    z-index: 9999; /* popup komt boven overlay */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+#popUp .container-button {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 10px;
+}
+
+#popUp .container-button button {
+    flex: 1;
+    max-width: 120px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#popUp .container-button button:first-of-type {
+    background-color: #007bff;
+    color: white;
+}
+
+#popUp .container-button button:last-of-type {
+    background-color: #dc3545;
+    color: white;
+}
+
+#popUp .container-button button:first-of-type:hover {
+    background-color: #0056b3;
+}
+
+#popUp .container-button button:last-of-type:hover {
+    background-color: #a71d2a;
 }

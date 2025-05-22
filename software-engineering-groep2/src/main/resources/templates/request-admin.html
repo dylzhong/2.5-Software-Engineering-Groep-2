@@ -6,22 +6,32 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
+    <link href="/request-admin.css" rel="stylesheet">
 </head>
 <body onload="loadRequestOfAdmin();">
-<h2>All User Requests</h2>
+<div class="top">
+    <h2>All User Requests</h2>
+    <button class="button-home" onclick="window.location.href='/home'">Home</button>
+</div>
 
-<table id="table-admin-request" class="row-border">
-    <thead>
-    <tr>
-        <th>Name</th>
-        <th>Location</th>
-        <th>Date</th>
-        <th>Status</th>
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="main">
+    <div class="container-card">
+        <div class="container-table">
+            <table id="table-admin-request" class="row-border">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script>
     function loadRequestOfAdmin() {
@@ -30,7 +40,7 @@
             method: "GET",
             dataType: "json",
             success: function (data) {
-                table = $('#table-admin-request').DataTable({
+                const table = $('#table-admin-request').DataTable({
                     data: data,
                     destroy: true,
                     columns: [
@@ -43,9 +53,9 @@
                             render: function (data, type, row) {
                                 if (row.status === "Pending") {
                                     return `
-                                        <button onclick="updateStatus('${row.id}', 'Approved')">Approve</button>
-                                        <button onclick="updateStatus('${row.id}', 'Rejected')">Reject</button>
-                                        `;
+                                        <button class="button-action" onclick="updateStatus('${row.id}', 'Approved')">Approve</button>
+                                        <button class="button-action reject" onclick="updateStatus('${row.id}', 'Rejected')">Reject</button>
+                                    `;
                                 } else {
                                     return "-";
                                 }
@@ -87,10 +97,9 @@
                 url: `/api/request/admin/status?id=${requestId}&status=${newStatus}`,
                 method: "POST",
                 success: function () {
-                    const row = table
-                        .row(function (idx, data) {
-                            return data.id === requestId;
-                        });
+                    const row = table.row(function (idx, data) {
+                        return data.id === requestId;
+                    });
 
                     if (row) {
                         const rowData = row.data();

@@ -68,7 +68,23 @@ body {
     flex-grow: 1;
 }
 
-tr {
-    cursor: pointer;
+.card-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: -20px;
+    margin-right: -20px;
 }
 
+.button-close {
+    background: none;
+    border: none;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s ease;
+}
+
+.button-close:hover {
+    color: #333;
+}

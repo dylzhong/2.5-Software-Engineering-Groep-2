@@ -6,21 +6,34 @@
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css">
+    <link href="/request-view.css" rel="stylesheet">
 </head>
 <body onload="loadRequestDetails();">
-<h2>Request Details</h2>
+<div class="top">
+    <h2>Request Details</h2>
+    <button class="button-home" onclick="window.location.href='/home'">Home</button>
+</div>
 
-<table id="table-request-user-detail" class="row-border">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>NDC</th>
-        <th>Details</th>
-        <th>Amount</th>
-    </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<div class="main">
+    <div class="container-card">
+        <div class="card-header">
+            <button class="button-close" onclick="window.history.back();">&#x2715;</button>
+        </div>
+        <div class="container-table">
+            <table id="table-request-user-detail" class="row-border">
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>NDC</th>
+                    <th>Details</th>
+                    <th>Amount</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script>
     function loadRequestDetails() {
@@ -39,6 +52,12 @@
                         { data: "ndc" },
                         { data: "details" },
                         { data: "amount" }
+                    ],
+                    columnDefs: [
+                        {
+                            targets: '_all',
+                            className: "dt-head-left dt-body-left"
+                        }
                     ]
                 });
             },

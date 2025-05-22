@@ -8,226 +8,234 @@
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
     <link href="/stock.css" rel="stylesheet">
 </head>
+    <body onload="loadStock()">
+        <div class="top">
+            <h2>Stock Overview</h2>
+            <button class="button-home" onclick="window.location.href='/home'">Home</button>
+        </div>
 
-<body onload="loadStock()">
-    <div class="container-table">
-        <form id="form-table" autocomplete="off">
-            <table id="table-stock" class="row-border">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>NDC</th>
-                    <th>Details</th>
-                    <th>Amount</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="openPopUp()">Add new item</button>
-            <button type="button" onclick=window.location.href='/home'>Home</button>
-        </form>
-    </div>
+        <div class="main">
+            <div class="container-card">
+                <div class="button-actions">
+                    <button class="button-datatable" type="button" onclick="openPopUp()">Add item</button>
+                </div>
+                <div class="container-table">
+                    <form id="form-table" autocomplete="off">
+                        <table id="table-stock" class="row-border">
+                            <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>NDC</th>
+                                <th>Details</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    <div id="overlay"></div>
+        <div id="overlay"></div>
+        <div id="popUp">
+            <h3>Add new item</h3>
+            <form id="form-add" autocomplete="off">
+                <label for="id">ID:</label><br>
+                <input type="text" id="id" required><br>
+                <label for="ndc">NDC:</label><br>
+                <input type="text" id="ndc" required><br>
+                <label for="details">Details:</label><br>
+                <input type="text" id="details" required><br>
+                <label for="amount">Amount:</label><br>
+                <input type="number" id="amount" required><br><br>
 
-    <div id="popUp">
-        <h3>Add new item</h3>
-        <form id="form-add" autocomplete="off">
-            <label for="id">ID:</label><br>
-            <input type="text" id="id" required><br>
-            <label for="ndc">NDC:</label><br>
-            <input type="text" id="ndc" required><br>
-            <label for="details">Details:</label><br>
-            <input type="text" id="details" required><br>
-            <label for="amount">Amount:</label><br>
-            <input type="number" id="amount" required><br><br>
+                <div class="container-button">
+                    <button type="button" onclick="addItem()">Submit</button>
+                    <button type="button" onclick="closePopUp()">Cancel</button>
+                </div>
+            </form>
+        </div>
+        <script>
+            function loadStock() {
+                $.ajax({
+                    url: "/api/stock/all",
+                    method: "GET",
+                    dataType: "json",
+                    success: function(data) {
+                        const table = $('#table-stock').DataTable({
+                            data: data,
+                            destroy: true,
+                            columns: [
+                                { data: "id" },
+                                { data: "ndc" },
+                                { data: "details" },
+                                { data: "amount" },
+                                {
+                                    data: null,
+                                    render: function (data, type, row) {
+                                        return `<button class="button-delete" data-id="${row.id}">Delete</button>`;
+                                    },
+                                    orderable: false
+                                }
+                            ],
+                            columnDefs: [
+                                {
+                                    targets: '_all',
+                                    className: "dt-head-left dt-body-left"
+                                }
+                            ]
+                        });
 
-            <button type="button" onclick="addItem()">Submit</button>
-            <button type="button" onclick="closePopUp()">Cancel</button>
-        </form>
-    </div>
-
-
-    <script>
-        function loadStock() {
-            $.ajax({
-                url: "/api/stock/all",
-                method: "GET",
-                dataType: "json",
-                success: function(data) {
-                    const table = $('#table-stock').DataTable({
-                        data: data,
-                        destroy: true,
-                        columns: [
-                            { data: "id" },
-                            { data: "ndc" },
-                            { data: "details" },
-                            { data: "amount" },
-                            {
-                                data: null,
-                                render: function (data, type, row) {
-                                    return `<button class="button-delete" data-id="${row.id}">Delete</button>`;
-                                },
-                                orderable: false
-                            }
-                        ],
-                        columnDefs: [
-                            {
-                                targets: '_all',
-                                className: "dt-head-left dt-body-left"
-                            }
-                        ]
-                    });
-
-                    editItem(table);
-                    deleteItem(table);
-                },
-                error: function (data) {
-                    alert(data.responseText);
-                }
-            });
-        }
-
-        function addItem() {
-            const id = $('#id').val();
-            const ndc = $('#ndc').val();
-            const details = $('#details').val();
-            const amount = $('#amount').val();
-
-            const form = document.getElementById("form-add");
-            if (!form.checkValidity()) {
-                form.reportValidity();
-                return;
+                        editItem(table);
+                        deleteItem(table);
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
             }
 
-            $.ajax({
-                url: "/api/stock/add",
-                method: "POST",
-                data: {
-                    id: id,
-                    ndc: ndc,
-                    details: details,
-                    amount: amount
-                },
-                success: function (data) {
-                    alert(data);
-                    closePopUp();
-                    loadStock();
-                },
-                error: function (data) {
-                    alert(data.responseText)
+            function addItem() {
+                const id = $('#id').val();
+                const ndc = $('#ndc').val();
+                const details = $('#details').val();
+                const amount = $('#amount').val();
+
+                const form = document.getElementById("form-add");
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
                 }
-            });
-        }
 
-        function editItem(table) {
-            // Als iemand op een cel in de tabel klikt...
-            $('#table-stock tbody').off('click', 'td').on('click', 'td', function () {
-                const column = table.cell(this).index().column;
+                $.ajax({
+                    url: "/api/stock/add",
+                    method: "POST",
+                    data: {
+                        id: id,
+                        ndc: ndc,
+                        details: details,
+                        amount: amount
+                    },
+                    success: function (data) {
+                        alert(data);
+                        closePopUp();
+                        loadStock();
+                    },
+                    error: function (data) {
+                        alert(data.responseText)
+                    }
+                });
+            }
 
-                //Skipt ID-kolom en Actie-kolom
-                if (column === 0 || column === 4) return;
+            function editItem(table) {
+                // Als iemand op een cel in de tabel klikt...
+                $('#table-stock tbody').off('click', 'td').on('click', 'td', function () {
+                    const column = table.cell(this).index().column;
 
-                //Cel waarop geklikt is
-                const cell = $(this);
-                //Bewaar de originele tekst van de cel
-                const original = cell.text();
+                    //Skipt ID-kolom en Actie-kolom
+                    if (column === 0 || column === 4) return;
 
-                function handleKey(e) {
-                    //Als op Enter is gedrukt, wijziging opslaan
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        cell.off('keydown', handleKey);
-                        // Maak de cel weer normaal, niet meer bewerkbaar
-                        cell.removeAttr('contenteditable');
+                    //Cel waarop geklikt is
+                    const cell = $(this);
+                    //Bewaar de originele tekst van de cel
+                    const original = cell.text();
 
-                        // Haal de nieuwe tekst op
-                        const newValue = cell.text();
-                        if (newValue !== original) {
-                            // Haal de hele rij op
-                            const row = table.row(cell.closest('tr')).data();
-                            // Haal de kolomnaam op
-                            const columnName = table.column(column).dataSrc();
-                            row[columnName] = newValue;
+                    function handleKey(e) {
+                        //Als op Enter is gedrukt, wijziging opslaan
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            cell.off('keydown', handleKey);
+                            // Maak de cel weer normaal, niet meer bewerkbaar
+                            cell.removeAttr('contenteditable');
 
-                            $.ajax({
-                                url: "/api/stock/edit",
-                                method: "PUT",
-                                data: {
-                                    id: row.id,
-                                    ndc: row.ndc,
-                                    details: row.details,
-                                    amount: row.amount
-                                },
-                                success: function (data) {
-                                    alert(data);
-                                },
-                                error: function (data) {
-                                    alert(data.responseText);
-                                }
-                            });
+                            // Haal de nieuwe tekst op
+                            const newValue = cell.text();
+                            if (newValue !== original) {
+                                // Haal de hele rij op
+                                const row = table.row(cell.closest('tr')).data();
+                                // Haal de kolomnaam op
+                                const columnName = table.column(column).dataSrc();
+                                row[columnName] = newValue;
+
+                                $.ajax({
+                                    url: "/api/stock/edit",
+                                    method: "PUT",
+                                    data: {
+                                        id: row.id,
+                                        ndc: row.ndc,
+                                        details: row.details,
+                                        amount: row.amount
+                                    },
+                                    success: function (data) {
+                                        alert(data);
+                                    },
+                                    error: function (data) {
+                                        alert(data.responseText);
+                                    }
+                                });
+                            }
+                        }
+
+                        //Als op Escape is gedrukt, wijziging annuleren
+                        if (e.key === 'Escape') {
+                            e.preventDefault();
+                            cell.text(original);
+                            cell.removeAttr('contenteditable');
+                            cell.off('keydown', handleKey);
                         }
                     }
 
-                    //Als op Escape is gedrukt, wijziging annuleren
-                    if (e.key === 'Escape') {
-                        e.preventDefault();
-                        cell.text(original);
-                        cell.removeAttr('contenteditable');
-                        cell.off('keydown', handleKey);
+                    cell.off('keydown').on('keydown', handleKey);
+                    //Maak de cel bewerkbaar
+                    cell.attr('contenteditable', 'true').focus();
+                });
+            }
+
+            function deleteItem(table) {
+                $('#table-stock').off('click', '.button-delete');
+                // Als iemand op een "Delete"-knop klikt in de tabel...
+                $('#table-stock').on('click', '.button-delete', function (event) {
+
+                    // Zorg dat de knop niks anders doet (zoals opnieuw laden van de pagina)
+                    event.preventDefault();
+
+                    // Haal het ID van het item
+                    const id = $(this).data('id');
+                    // Zoek de rij
+                    const row = $(this).closest('tr');
+
+                    if (confirm("Are you sure you want to delete this item?")) {
+                        $.ajax({
+                            url: "/api/stock/delete",
+                            method: "DELETE",
+                            data: {id: id},
+                            success: function (data) {
+                                alert(data);
+                                // Verwijder de rij uit de tabel
+                                table.row(row).remove().draw();
+                            },
+                            error: function (data) {
+                                alert(data.responseText);
+                            }
+                        });
                     }
-                }
+                });
+            }
 
-                cell.off('keydown').on('keydown', handleKey);
-                //Maak de cel bewerkbaar
-                cell.attr('contenteditable', 'true').focus();
-            });
-        }
+            function openPopUp() {
+                document.getElementById("popUp").style.display = "block";
+                document.getElementById("overlay").style.display = "block";
+            }
 
-        function deleteItem(table) {
-            $('#table-stock').off('click', '.button-delete');
-            // Als iemand op een "Delete"-knop klikt in de tabel...
-            $('#table-stock').on('click', '.button-delete', function (event) {
+            function closePopUp() {
+                document.getElementById("popUp").style.display = "none";
+                document.getElementById("overlay").style.display = "none";
+            }
 
-                // Zorg dat de knop niks anders doet (zoals opnieuw laden van de pagina)
-                event.preventDefault();
+            document.getElementById("overlay").addEventListener("click", closePopUp);
 
-                // Haal het ID van het item
-                const id = $(this).data('id');
-                // Zoek de rij
-                const row = $(this).closest('tr');
-
-                if (confirm("Are you sure you want to delete this item?")) {
-                    $.ajax({
-                        url: "/api/stock/delete",
-                        method: "DELETE",
-                        data: {id: id},
-                        success: function (data) {
-                            alert(data);
-                            // Verwijder de rij uit de tabel
-                            table.row(row).remove().draw();
-                        },
-                        error: function (data) {
-                            alert(data.responseText);
-                        }
-                    });
-                }
-            });
-        }
-
-        function openPopUp() {
-            document.getElementById("popUp").style.display = "block";
-            document.getElementById("overlay").style.display = "block";
-        }
-
-        function closePopUp() {
-            document.getElementById("popUp").style.display = "none";
-            document.getElementById("overlay").style.display = "none";
-        }
-
-        document.getElementById("overlay").addEventListener("click", closePopUp);
-
-    </script>
-</body>
+        </script>
+    </body>
 </html>

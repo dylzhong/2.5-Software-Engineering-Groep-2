@@ -1,22 +1,238 @@
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background-color: #f2f2f2;
+    display: flex;
+    flex-direction: column;
+}
+
+.top {
+    background-color: white;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    display: flex;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.top h2 {
+    margin: 0;
+    font-size: 20px;
+    color: #333;
+}
+
+.button-home {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 6px;
+}
+
+.button-home:hover {
+    background-color: #0056b3;
+}
+
+.main {
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    padding: 40px 20px;
+    flex-grow: 1;
+}
+
+.container-card {
+    background-color: white;
+    box-sizing: border-box;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 1000px;
+    height: 100%;
+    gap: 30px;
+}
+
+.container-table {
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.button-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.button-datatable {
+    background-color: #007bff;
+    cursor: pointer;
+    color: white;
+    border: none;
+    flex: 1;
+    max-width: 250px;
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 8px;
+    transition: background-color 0.2s ease;
+}
+
+.button-datatable:hover {
+    background-color: #0056b3;
+}
+
+.button-remove {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button-remove:hover {
+    background-color: #a71d2a;
+}
+
 #overlay {
     display: none;
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.3); /* lichtgrijze waas */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
 }
 
 #popUp {
     display: none;
     position: fixed;
-    top: 20%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
-    background: white;
-    padding: 20px;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    z-index: 1001;
+    width: 400px;
+    max-width: 90vw;
+}
+
+#popUp h3 {
+    margin-top: 20px;
+    font-size: 20px;
+    color: black;
+    margin-bottom: 20px;
+}
+
+#popUp label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: -10px;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+#popUp input,
+#popUp select {
+    width: 100%;
+    padding:10px;
+    margin-top: 4px;
+    margin-bottom: 12px;
     border: 1px solid #ccc;
-    z-index: 9999; /* popup komt boven overlay */
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+#popUp button {
+    padding: 10px 16px;
+    margin-top: 10px;
+    margin-right: 8px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#popUp .container-button {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+}
+
+#popUp .container-button button {
+    flex: 1;
+    max-width: 120px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+#popUp button[type="button"]:first-of-type {
+    background-color: #007bff;
+    color: white;
+}
+
+#popUp button[type="button"]:first-of-type:hover {
+    background-color: #0056b3;
+}
+
+#popUp button[type="button"]:last-of-type {
+    background-color: #dc3545;
+    color: white;
+}
+
+#popUp button[type="button"]:last-of-type:hover {
+    background-color: #a71d2a;
+}
+
+.select2-container .select2-selection--single {
+    height: 38px;
+    padding: 0 3px;
+    margin-bottom: 12px;
+}
+
+.select2-container--default .select2-selection--single {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+
+.select2-selection__placeholder {
+    font-size: 13px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 37px;
+    font-size: 14px;
+    color: black;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow{
+    height: 37px;
+    right: 5px;
+}
+
+.select2-container--open .select2-dropdown {
+    top: -14px;
+}
+
+.select2-container--open .select2-dropdown--below {
+    border: 1px solid #ccc;
 }

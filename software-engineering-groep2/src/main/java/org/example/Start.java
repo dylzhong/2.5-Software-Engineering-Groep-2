@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
 public class Start {
-    //http://localhost:8080/
+
+    /** Accessible via: {@code http://localhost:8080} by default. */
     public static void main(String[] args) {
         SpringApplication.run(Start.class, args);
     }

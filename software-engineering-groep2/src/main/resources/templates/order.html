@@ -2,59 +2,75 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>?</title>
+    <title>New Request</title>
     <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <script src="https://cdn.datatables.net/2.1.8/js/dataTables.js"></script>
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <link href="/order.css" rel="stylesheet">
-
 </head>
-<body onload="loadOrder();">
-    <div class="container-table">
-        <form id="form-table" autocomplete="off">
-            <table id="table-order" class="row-border">
-                <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>National Drug Code</th>
-                    <th>Details</th>
-                    <th>Amount</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-            <button type="button" onclick="openPopUp()" class="button">Add item</button>
-            <button type="button" onclick="submitOrder()">Submit all orders</button>
-            <button type="button" onclick="loadRecentOrder()">Get most recent order</button>
-            <button type="button" onclick="cancelOrder()">Cancel</button>
-        </form>
+    <body onload="loadOrder();">
+
+    <div class="top">
+        <h2>New Request</h2>
+        <button class="button-home" onclick="window.location.href='/home'">Home</button>
+    </div>
+
+    <div class="main">
+        <div class="container-card">
+            <div class="button-actions">
+                <button class="button-datatable" type="button" onclick="openPopUp()">Add an order</button>
+                <button class="button-datatable" type="button" onclick="submitOrder()">Submit request</button>
+                <button class="button-datatable" type="button" onclick="loadRecentOrder()">Get recent request</button>
+            </div>
+
+            <div class="container-table">
+                <table id="table-order" class="row-border">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>NDC</th>
+                        <th>Details</th>
+                        <th>Amount</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div id="overlay"></div>
-    <div id="popUp">
-        <h3>Add new order</h3>
-        <form id="form-select">
-            <label for="select-id">Selecteer bestaand item</label><br>
-            <select class="form-control" id="select-id" name="select-id"></select>
-        </form>
-        <form id="form-add" autocomplete="off">
-            <label for="id">ID:</label><br>
-            <input type="text" id="id" required><br>
-            <label for="ndc">NDC:</label><br>
-            <input type="text" id="ndc" required><br>
-            <label for="details">Details:</label><br>
-            <input type="text" id="details" required><br>
-            <label for="amount">Amount:</label><br>
-            <input type="number" id="amount" required><br><br>
+    <div class="container-popup">
+        <div id="popUp">
+            <h3>Add new order</h3>
+            <form id="form-select">
+                <label for="select-id"></label><br>
+                <select class="form-control" id="select-id" name="select-id"></select>
+            </form>
+            <form id="form-add" autocomplete="off">
+                <label for="id">ID:</label><br>
+                <input type="text" id="id" required><br>
+                <label for="ndc">NDC:</label><br>
+                <input type="text" id="ndc" required><br>
+                <label for="details">Details:</label><br>
+                <input type="text" id="details" required><br>
+                <label for="amount">Amount:</label><br>
+                <input type="number" id="amount" required><br><br>
 
-            <button type="button" onclick="addOrder()">Add</button>
-            <button type="button" onclick="closePopUp()">Cancel</button>
-        </form>
+                <div class="container-button">
+                    <button type="button" onclick="addOrder()" style="background-color: #007bff; color: white;">
+                        Add
+                    </button>
+                    <button type="button" onclick="closePopUp()" style="background-color: #dc3545; color: white;">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-
     <script>
         function loadOrder() {
             $.ajax({
@@ -81,7 +97,7 @@
                         columnDefs: [
                             {
                                 targets: '_all',
-                                className: "dt-head-left dt-body-left"
+                                className: "dt-head-left dt-body-left",
                             }
                         ],
                         language: {
@@ -152,8 +168,7 @@
 
                     $('#select-id').select2({
                         placeholder: "Search...",
-                        allowClear: true,
-                        width: 'resolve',
+                        width: '100%',
                         dropdownParent: $('#popUp')
                     }).on('change', function () {
                         showItem();
