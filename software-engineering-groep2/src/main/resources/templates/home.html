@@ -85,7 +85,7 @@
 </head>
 <body>
     <div class="top">
-        <h2>Welcome, <span sec:authentication="name">user</span>!</h2>
+        <h2>Welcome, <span id="user-name">...</span>!</h2>
         <form th:action="@{/logout}" method="post">
             <button class="button-logout" type="submit">Logout</button>
         </form>
@@ -118,5 +118,16 @@
             </a>
         </div>
     </div>
+
+    <script>
+        fetch('/api/name')
+            .then(res => res.text())
+            .then(name => {
+                document.getElementById('user-name').innerText = name;
+            })
+            .catch(() => {
+                document.getElementById('user-name').innerText = 'user';
+            });
+    </script>
 </body>
 </html>

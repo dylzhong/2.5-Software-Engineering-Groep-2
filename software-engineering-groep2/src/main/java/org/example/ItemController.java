@@ -401,7 +401,7 @@ public class ItemController {
         return ResponseEntity.ok("Request cancelled successfully.");
     }
 
-    // --------- MY REQUEST-MAPPINGS ---------
+    // --------- REQUEST-MAPPINGS ---------
 
     /**
      * Retrieves all previously submitted requests of the current user.
@@ -488,5 +488,23 @@ public class ItemController {
             }
         }
         return ResponseEntity.status(404).body("Request not found");
+    }
+
+    // --------- EXTRA-MAPPINGS ---------
+
+    /**
+     * Returns the full name of the currently authenticated user.
+     * <p>
+     * This endpoint can be used to personalize the frontend,
+     * such as showing a welcome message with the user's full name.
+     * </p>
+     *
+     * @return The full name of the logged-in user as a plain text string.
+     */
+    @GetMapping("/name")
+    public String getFullName() {
+        CustomUserDetails userDetails = (CustomUserDetails) SecurityContextHolder.getContext()
+                .getAuthentication().getPrincipal();
+        return userDetails.getFullName();
     }
 }
