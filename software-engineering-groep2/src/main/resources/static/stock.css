@@ -54,7 +54,6 @@ body {
     display: flex;
     flex-direction: column;
     padding: 30px;
-    border-radius: 12px;
     width: 100%;
     max-width: 1000px;
     height: 100%;
