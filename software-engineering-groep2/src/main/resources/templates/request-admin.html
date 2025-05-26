@@ -8,113 +8,111 @@
     <link href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css" rel="stylesheet">
     <link href="/request-admin.css" rel="stylesheet">
 </head>
-<body onload="loadRequestOfAdmin();">
-<div class="top">
-    <h2>All User Requests</h2>
-    <button class="button-home" onclick="window.location.href='/home'">Home</button>
-</div>
-
-<div class="main">
-    <div class="container-card">
-        <div class="container-table">
-            <table id="table-admin-request" class="row-border">
-                <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Location</th>
-                    <th>Date</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+    <body onload="loadRequestOfAdmin();">
+        <div class="top">
+            <h2>All User Requests</h2>
+            <button class="button-home" onclick="window.location.href='/home'">Home</button>
         </div>
-    </div>
-</div>
-
-<script>
-    function loadRequestOfAdmin() {
-        $.ajax({
-            url: "/api/request/admin/all",
-            method: "GET",
-            dataType: "json",
-            success: function (data) {
-                const table = $('#table-admin-request').DataTable({
-                    data: data,
-                    destroy: true,
-                    columns: [
-                        { data: "name" },
-                        { data: "location" },
-                        { data: "date" },
-                        { data: "status" },
-                        {
-                            data: null,
-                            render: function (data, type, row) {
-                                if (row.status === "Pending") {
-                                    return `
-                                        <button class="button-action" onclick="updateStatus('${row.id}', 'Approved')">Approve</button>
-                                        <button class="button-action reject" onclick="updateStatus('${row.id}', 'Rejected')">Reject</button>
-                                    `;
-                                } else {
-                                    return "";
+        <div class="main">
+            <div class="container-card">
+                <div class="container-table">
+                    <table id="table-admin-request" class="row-border">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <script>
+            function loadRequestOfAdmin() {
+                $.ajax({
+                    url: "/api/request/admin/all",
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        const table = $('#table-admin-request').DataTable({
+                            data: data,
+                            destroy: true,
+                            columns: [
+                                { data: "name" },
+                                { data: "location" },
+                                { data: "date" },
+                                { data: "status" },
+                                {
+                                    data: null,
+                                    render: function (data, type, row) {
+                                        if (row.status === "Pending") {
+                                            return `
+                                                <button class="button-action" onclick="updateStatus('${row.id}', 'Approved')">Approve</button>
+                                                <button class="button-action reject" onclick="updateStatus('${row.id}', 'Rejected')">Reject</button>
+                                            `;
+                                        } else {
+                                            return "";
+                                        }
+                                    }
                                 }
+                            ],
+                            columnDefs: [
+                                {
+                                    targets: '_all',
+                                    className: "dt-head-left dt-body-left"
+                                }
+                            ],
+                            language: {
+                                emptyTable: "No user requests submitted yet."
                             }
-                        }
-                    ],
-                    columnDefs: [
-                        {
-                            targets: '_all',
-                            className: "dt-head-left dt-body-left"
-                        }
-                    ],
-                    language: {
-                        emptyTable: "No user requests submitted yet."
+                        });
+
+                        $('#table-admin-request tbody').on('click', 'tr', function (event) {
+                            if ($(event.target).closest('button').length > 0) return;
+
+                            const rowData = table.row(this).data();
+                            if (!rowData) return;
+
+                            const id = rowData.id;
+                            window.location.href = `/request/view?id=${id}`;
+                        });
+
+                        updateStatus(table);
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
                     }
                 });
-
-                $('#table-admin-request tbody').on('click', 'tr', function (event) {
-                    if ($(event.target).closest('button').length > 0) return;
-
-                    const rowData = table.row(this).data();
-                    if (!rowData) return;
-
-                    const id = rowData.id;
-                    window.location.href = `/request/view?id=${id}`;
-                });
-
-                updateStatus(table);
-            },
-            error: function (data) {
-                alert(data.responseText);
             }
-        });
-    }
 
-    function updateStatus(table) {
-        window.updateStatus = function (requestId, newStatus) {
-            $.ajax({
-                url: `/api/request/admin/status?id=${requestId}&status=${newStatus}`,
-                method: "POST",
-                success: function () {
-                    const row = table.row(function (idx, data) {
-                        return data.id === requestId;
+            function updateStatus(table) {
+                window.updateStatus = function (requestId, newStatus) {
+                    $.ajax({
+                        url: `/api/request/admin/status?id=${requestId}&status=${newStatus}`,
+                        method: "POST",
+                        success: function () {
+                            const row = table.row(function (idx, data) {
+                                return data.id === requestId;
+                            });
+
+                            if (row) {
+                                const rowData = row.data();
+                                rowData.status = newStatus;
+                                table.row(row).invalidate().draw(false);
+                            }
+
+                            alert(`Request ${newStatus.toLowerCase()} successfully.`);
+                        },
+                        error: function (data) {
+                            alert(data.responseText);
+                        }
                     });
-
-                    if (row) {
-                        const rowData = row.data();
-                        rowData.status = newStatus;
-                        table.row(row).invalidate().draw(false);
-                    }
-
-                    alert(`Request ${newStatus.toLowerCase()} successfully.`);
-                },
-                error: function (data) {
-                    alert(data.responseText);
-                }
-            });
-        };
-    }
-</script>
-</body>
+                };
+            }
+        </script>
+    </body>
 </html>

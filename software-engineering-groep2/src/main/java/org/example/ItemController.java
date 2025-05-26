@@ -432,6 +432,12 @@ public class ItemController {
         return ResponseEntity.ok(adminRequestList);
     }
 
+    /**
+     * Cancels a previously submitted request for the currently authenticated user.
+     *
+     * @param id The unique identifier of the request to be cancelled (UUID as String).
+     * @return ResponseEntity with a success message if the request was removed, or an error message if the request was not found.
+     */
     @DeleteMapping("/request/user/cancel")
     public ResponseEntity<String> cancelSubmittedRequest(@RequestParam("id") String id) {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();

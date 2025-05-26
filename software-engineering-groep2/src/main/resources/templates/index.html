@@ -1,92 +1,92 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+    <head>
+        <meta charset="UTF-8">
+        <title>Login</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f2f2f2;
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
 
-        .container-login {
-            background-color: #fff;
-            padding: 30px 40px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 250px;
-        }
+            .container-login {
+                background-color: #fff;
+                padding: 30px 40px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                width: 100%;
+                max-width: 250px;
+            }
 
-        h2 {
-            color: #333;
-            margin-bottom: 40px;
-            text-align: center;
-        }
+            h2 {
+                color: #333;
+                margin-bottom: 40px;
+                text-align: center;
+            }
 
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
+            form {
+                display: flex;
+                flex-direction: column;
+                gap: 40px;
+            }
 
-        .container-input {
-            display: flex;
-            flex-direction: column;
-        }
+            .container-input {
+                display: flex;
+                flex-direction: column;
+            }
 
-        .container-input label {
-            font-weight: bold;
-            color: #555;
-            margin-bottom: 10px;
-        }
+            .container-input label {
+                font-weight: bold;
+                color: #555;
+                margin-bottom: 10px;
+            }
 
-        .container-input input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-            font-size: 14px;
-        }
+            .container-input input {
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
+            }
 
-        button {
-            background-color: #007bff;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 6px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-bottom: 20px;
-            margin-top: 10px;
-        }
+            button {
+                background-color: #007bff;
+                color: white;
+                padding: 12px;
+                border: none;
+                border-radius: 6px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background-color 0.3s ease;
+                margin-bottom: 20px;
+                margin-top: 10px;
+            }
 
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-    <div class="container-login">
-        <h2>Login</h2>
-        <form method="post" th:action="@{/login}">
-            <div class="container-input">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required/>
-            </div>
+            button:hover {
+                background-color: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container-login">
+            <h2>Login</h2>
+            <form method="post" th:action="@{/login}">
+                <div class="container-input">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" name="username" required/>
+                </div>
 
-            <div class="container-input">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required/>
-            </div>
+                <div class="container-input">
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required/>
+                </div>
 
-            <button type="submit">Login</button>
-        </form>
-    </div>
-</body>
+                <button type="submit">Login</button>
+            </form>
+        </div>
+    </body>
 </html>

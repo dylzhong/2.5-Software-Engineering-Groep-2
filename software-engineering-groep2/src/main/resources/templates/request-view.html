@@ -8,62 +8,62 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/2.1.8/css/dataTables.dataTables.css">
     <link href="/request-view.css" rel="stylesheet">
 </head>
-<body onload="loadRequestDetails();">
-    <div class="top">
-        <h2>Request Details</h2>
-        <button class="button-home" onclick="window.location.href='/home'">Home</button>
-    </div>
-    <div class="main">
-        <div class="container-card">
-            <div class="card-header">
-                <button class="button-close" onclick="window.history.back();">&#x2715;</button>
-            </div>
-            <div class="container-table">
-                <table id="table-request-view" class="row-border">
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>NDC</th>
-                        <th>Details</th>
-                        <th>Amount</th>
-                    </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+    <body onload="loadRequestDetails();">
+        <div class="top">
+            <h2>Request Details</h2>
+            <button class="button-home" onclick="window.location.href='/home'">Home</button>
+        </div>
+        <div class="main">
+            <div class="container-card">
+                <div class="card-header">
+                    <button class="button-close" onclick="window.history.back();">&#x2715;</button>
+                </div>
+                <div class="container-table">
+                    <table id="table-request-view" class="row-border">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>NDC</th>
+                            <th>Details</th>
+                            <th>Amount</th>
+                        </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
-    <script>
-        function loadRequestDetails() {
-            const id = new URLSearchParams(window.location.search).get("id");
+        <script>
+            function loadRequestDetails() {
+                const id = new URLSearchParams(window.location.search).get("id");
 
-            $.ajax({
-                url: `/api/request/view?id=${id}`,
-                method: "GET",
-                dataType: "json",
-                success: function (data) {
-                    $('#table-request-view').DataTable({
-                        data: data,
-                        destroy: true,
-                        columns: [
-                            { data: "id" },
-                            { data: "ndc" },
-                            { data: "details" },
-                            { data: "amount" }
-                        ],
-                        columnDefs: [
-                            {
-                                targets: '_all',
-                                className: "dt-head-left dt-body-left"
-                            }
-                        ]
-                    });
-                },
-                error: function (data) {
-                    alert(data.responseText);
-                }
-            });
-        }
-    </script>
-</body>
+                $.ajax({
+                    url: `/api/request/view?id=${id}`,
+                    method: "GET",
+                    dataType: "json",
+                    success: function (data) {
+                        $('#table-request-view').DataTable({
+                            data: data,
+                            destroy: true,
+                            columns: [
+                                { data: "id" },
+                                { data: "ndc" },
+                                { data: "details" },
+                                { data: "amount" }
+                            ],
+                            columnDefs: [
+                                {
+                                    targets: '_all',
+                                    className: "dt-head-left dt-body-left"
+                                }
+                            ]
+                        });
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
+            }
+        </script>
+    </body>
 </html>

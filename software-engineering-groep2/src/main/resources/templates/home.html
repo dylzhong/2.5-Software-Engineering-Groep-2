@@ -1,133 +1,129 @@
 <!DOCTYPE html>
-<html lang="en"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-    <meta charset="UTF-8">
-    <title>Home</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            display: flex;
-            flex-direction: column;
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-        }
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Home</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                background-color: #f0f0f0;
+                display: flex;
+                flex-direction: column;
+                margin: 0;
+                padding: 0;
+                height: 100vh;
+                overflow: hidden;
+            }
 
-        .top {
-            background-color: white;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px 30px;
-            display: flex;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+            .top {
+                background-color: white;
+                justify-content: space-between;
+                align-items: center;
+                padding: 15px 30px;
+                display: flex;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            }
 
-        .top h2 {
-            margin: 0;
-            font-size: 20px;
-            color: #333;
-        }
+            .top h2 {
+                margin: 0;
+                font-size: 20px;
+                color: #333;
+            }
 
-        .button-logout {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 14px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
+            .button-logout {
+                background-color: #dc3545;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                font-size: 14px;
+                border-radius: 6px;
+                cursor: pointer;
+            }
 
-        .main {
-            flex: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+            .main {
+                flex: 1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
 
-        .container-card {
-            display: grid;
-            grid-template-columns: repeat(2, 200px);
-            gap: 20px;
-        }
+            .container-card {
+                display: grid;
+                grid-template-columns: repeat(2, 200px);
+                gap: 20px;
+            }
 
-        .card {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 200px;
-            width: 200px;
-            background-color: #007bff;
-            color: white;
-            text-align: center;
-            text-decoration: none;
-            font-size: 18px;
-            font-weight: bold;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s ease, background-color 0.2s ease;
-        }
+            .card {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 200px;
+                width: 200px;
+                background-color: #007bff;
+                color: white;
+                text-align: center;
+                text-decoration: none;
+                font-size: 18px;
+                font-weight: bold;
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+                transition: transform 0.2s ease, background-color 0.2s ease;
+            }
 
-        .card:hover {
-            transform: translateY(-5px);
-            background-color: #0069d9;
-        }
+            .card:hover {
+                transform: translateY(-5px);
+                background-color: #0069d9;
+            }
 
-        .card.disabled {
-            pointer-events: none;
-            background-color: darkgrey;
-            color: lightgrey;
-        }
-    </style>
-</head>
-<body>
-    <div class="top">
-        <h2>Welcome, <span id="user-name">...</span>!</h2>
-        <form th:action="@{/logout}" method="post">
-            <button class="button-logout" type="submit">Logout</button>
-        </form>
-    </div>
-
-    <div class="main">
-        <div class="container-card">
-            <a href="/request/user"
-               class="card"
-               th:classappend="${not #authorization.expression('hasRole(''USER'')')} ? ' disabled'">
-                My request
-            </a>
-
-            <a href="/order"
-               class="card"
-               th:classappend="${not #authorization.expression('hasRole(''USER'')')} ? ' disabled'">
-                New request
-            </a>
-
-            <a href="/stock"
-               class="card"
-               th:classappend="${not #authorization.expression('hasRole(''ADMIN'')')} ? ' disabled'">
-                Manage stock
-            </a>
-
-            <a href="/request/admin"
-               class="card"
-               th:classappend="${not #authorization.expression('hasRole(''ADMIN'')')} ? ' disabled'">
-                Manage requests
-            </a>
+            .card.disabled {
+                pointer-events: none;
+                background-color: darkgrey;
+                color: lightgrey;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="top">
+            <h2>Welcome to MediTrack, <span id="user-name">...</span>!</h2>
+            <form th:action="@{/logout}" method="post">
+                <button class="button-logout" type="submit">Logout</button>
+            </form>
         </div>
-    </div>
+        <div class="main">
+            <div class="container-card">
+                <a href="/request/user"
+                   class="card"
+                   th:classappend="${not #authorization.expression('hasRole(''USER'')')} ? ' disabled'">
+                    My request
+                </a>
 
-    <script>
-        fetch('/api/name')
-            .then(res => res.text())
-            .then(name => {
-                document.getElementById('user-name').innerText = name;
-            })
-            .catch(() => {
-                document.getElementById('user-name').innerText = 'user';
-            });
-    </script>
-</body>
+                <a href="/order"
+                   class="card"
+                   th:classappend="${not #authorization.expression('hasRole(''USER'')')} ? ' disabled'">
+                    New request
+                </a>
+
+                <a href="/stock"
+                   class="card"
+                   th:classappend="${not #authorization.expression('hasRole(''ADMIN'')')} ? ' disabled'">
+                    Manage stock
+                </a>
+
+                <a href="/request/admin"
+                   class="card"
+                   th:classappend="${not #authorization.expression('hasRole(''ADMIN'')')} ? ' disabled'">
+                    Manage requests
+                </a>
+            </div>
+        </div>
+        <script>
+            fetch('/api/name')
+                .then(res => res.text())
+                .then(name => {
+                    document.getElementById('user-name').innerText = name;
+                })
+                .catch(() => {
+                    document.getElementById('user-name').innerText = 'user';
+                });
+        </script>
+    </body>
 </html>
