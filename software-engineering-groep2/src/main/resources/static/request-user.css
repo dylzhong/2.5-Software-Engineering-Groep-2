@@ -38,6 +38,21 @@ body {
     background-color: #0056b3;
 }
 
+.button-cancel {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.button-cancel:hover {
+    background-color: #a71d2a;
+}
+
 .main {
     box-sizing: border-box;
     overflow-y: auto;

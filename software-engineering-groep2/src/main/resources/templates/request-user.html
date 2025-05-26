@@ -23,6 +23,7 @@
                 <tr>
                     <th>Date</th>
                     <th>Status</th>
+                    <th>Action</th>
                 </tr>
                 </thead>
                 <tbody></tbody>
@@ -43,7 +44,18 @@
                     destroy: true,
                     columns: [
                         { data: "date" },
-                        { data: "status" }
+                        { data: "status" },
+                        {
+                            data: null,
+                            render: function (data, type, row) {
+                                if (row.status === "Pending") {
+                                    return `<button class="button-cancel" data-id="${row.id}">Cancel</button>`;
+                                } else {
+                                    return "";
+                                }
+                            },
+                            orderable: false
+                        }
                     ],
                     columnDefs: [
                         {
@@ -56,14 +68,43 @@
                     }
                 });
 
-                $('#table-request-user tbody').on('click', 'tr', function () {
+                $('#table-request-user tbody').on('click', 'tr', function (event) {
+                    if ($(event.target).closest('button').length > 0) return;
+
                     const rowData = table.row(this).data();
-                    if (!rowData || !rowData.id) return;
-                    window.location.href = `/request/view?id=${rowData.id}`;
+                    if (!rowData) return;
+
+                    const id = rowData.id;
+                    window.location.href = `/request/view?id=${id}`;
                 });
+
+                cancelRequest(table)
             },
             error: function (data) {
                 alert(data.responseText);
+            }
+        });
+    }
+
+    function cancelRequest(table) {
+        $('#table-request-user').off('click', '.button-cancel');
+        $('#table-request-user').on('click', '.button-cancel', function (e) {
+            e.preventDefault();
+            const id = $(this).data('id');
+            const row = $(this).closest('tr');
+
+            if (confirm("Are you sure you want to cancel this request?")) {
+                $.ajax({
+                    url: `/api/request/user/cancel?id=${encodeURIComponent(id)}`,
+                    method: "DELETE",
+                    success: function (data) {
+                        alert(data);
+                        table.row(row).remove().draw(); // verwijder rij uit de DataTable
+                    },
+                    error: function (data) {
+                        alert(data.responseText);
+                    }
+                });
             }
         });
     }

@@ -417,6 +417,68 @@ public class ItemController {
     }
 
     /**
+     * Retrieves all requests from all users (admin-only usage).
+     *
+     * @return ResponseEntity containing a list of all requests in the system.
+     */
+    @GetMapping("/request/admin/all")
+    public ResponseEntity<List<Request>> getAllRequestForAdmin() {
+        List<Request> adminRequestList = new ArrayList<>();
+
+        for (List<Request> userRequests : requestMap.values()) {
+            adminRequestList.addAll(userRequests);
+        }
+
+        return ResponseEntity.ok(adminRequestList);
+    }
+
+    @DeleteMapping("/request/user/cancel")
+    public ResponseEntity<String> cancelSubmittedRequest(@RequestParam("id") String id) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        List<Request> userRequests = requestMap.get(username);
+
+        if (userRequests != null) {
+            Request toRemove = null;
+
+            for (Request r : userRequests) {
+                if (r.getId().equals(id)) {
+                    toRemove = r;
+                    break;
+                }
+            }
+
+            if (toRemove != null) {
+                userRequests.remove(toRemove);
+                return ResponseEntity.ok("Request successfully cancelled.");
+            }
+        }
+
+        return ResponseEntity.status(404).body("Error: Request with the given ID not found.");
+    }
+
+
+    /**
+     * Updates the status of a request (e.g., Pending → Approved).
+     * Accessible by admin roles.
+     *
+     * @param id The UUID of the request.
+     * @param status The new status value (e.g., Approved, Rejected).
+     * @return ResponseEntity indicating success or request not found.
+     */
+    @PostMapping("/request/admin/status")
+    public ResponseEntity<String> updateRequestStatus(@RequestParam UUID id, @RequestParam String status) {
+        for (List<Request> userRequests : requestMap.values()) {
+            for (Request r : userRequests) {
+                if (r.getId().equals(id.toString())) {
+                    r.setStatus(status);
+                    return ResponseEntity.ok("Status updated to " + status);
+                }
+            }
+        }
+        return ResponseEntity.status(404).body("Request not found");
+    }
+
+    /**
      * Retrieves the items from a specific request by ID.
      * Admins can access all requests; users only their own.
      *
@@ -453,44 +515,7 @@ public class ItemController {
         return ResponseEntity.status(404).body(null);
     }
 
-    /**
-     * Retrieves all requests from all users (admin-only usage).
-     *
-     * @return ResponseEntity containing a list of all requests in the system.
-     */
-    @GetMapping("/request/admin/all")
-    public ResponseEntity<List<Request>> getAllRequestForAdmin() {
-        List<Request> adminRequestList = new ArrayList<>();
-
-        for (List<Request> userRequests : requestMap.values()) {
-            adminRequestList.addAll(userRequests);
-        }
-
-        return ResponseEntity.ok(adminRequestList);
-    }
-
-    /**
-     * Updates the status of a request (e.g., Pending → Approved).
-     * Accessible by admin roles.
-     *
-     * @param id The UUID of the request.
-     * @param status The new status value (e.g., Approved, Rejected).
-     * @return ResponseEntity indicating success or request not found.
-     */
-    @PostMapping("/request/admin/status")
-    public ResponseEntity<String> updateRequestStatus(@RequestParam UUID id, @RequestParam String status) {
-        for (List<Request> userRequests : requestMap.values()) {
-            for (Request r : userRequests) {
-                if (r.getId().equals(id.toString())) {
-                    r.setStatus(status);
-                    return ResponseEntity.ok("Status updated to " + status);
-                }
-            }
-        }
-        return ResponseEntity.status(404).body("Request not found");
-    }
-
-    // --------- EXTRA-MAPPINGS ---------
+    // --------- EXTRAs ---------
 
     /**
      * Returns the full name of the currently authenticated user.
