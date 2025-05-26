@@ -84,8 +84,10 @@
                     <label for="password">Password:</label>
                     <input type="password" id="password" name="password" required/>
                 </div>
-
                 <button type="submit">Login</button>
+                <div th:if="${param.error}">
+                    <p style="color: red; text-align: center; margin-top: -20px;">Invalid username or password</p>
+                </div>
             </form>
         </div>
     </body>
