@@ -417,22 +417,6 @@ public class ItemController {
     }
 
     /**
-     * Retrieves all requests from all users (admin-only usage).
-     *
-     * @return ResponseEntity containing a list of all requests in the system.
-     */
-    @GetMapping("/request/admin/all")
-    public ResponseEntity<List<Request>> getAllRequestForAdmin() {
-        List<Request> adminRequestList = new ArrayList<>();
-
-        for (List<Request> userRequests : requestMap.values()) {
-            adminRequestList.addAll(userRequests);
-        }
-
-        return ResponseEntity.ok(adminRequestList);
-    }
-
-    /**
      * Cancels a previously submitted request for the currently authenticated user.
      *
      * @param id The unique identifier of the request to be cancelled (UUID as String).
@@ -462,6 +446,21 @@ public class ItemController {
         return ResponseEntity.status(404).body("Error: Request with the given ID not found.");
     }
 
+    /**
+     * Retrieves all requests from all users (admin-only usage).
+     *
+     * @return ResponseEntity containing a list of all requests in the system.
+     */
+    @GetMapping("/request/admin/all")
+    public ResponseEntity<List<Request>> getAllRequestForAdmin() {
+        List<Request> adminRequestList = new ArrayList<>();
+
+        for (List<Request> userRequests : requestMap.values()) {
+            adminRequestList.addAll(userRequests);
+        }
+
+        return ResponseEntity.ok(adminRequestList);
+    }
 
     /**
      * Updates the status of a request (e.g., Pending → Approved).
