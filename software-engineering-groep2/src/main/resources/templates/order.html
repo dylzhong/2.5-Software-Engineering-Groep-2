@@ -316,10 +316,8 @@
                         if (newValue !== original) {
                             const row = table.row(cell.closest('tr')).data();
 
-                            // Validatie: moet een positief getal zijn
                             const parsed = parseInt(newValue);
 
-                            // Stuur update naar de server
                             $.ajax({
                                 url: "/api/order/edit",
                                 method: "PUT",
@@ -340,6 +338,7 @@
                         }
                     }
 
+                    // Als gebruiker op Escape drukt: wijziging annuleren
                     if (e.key === 'Escape') {
                         e.preventDefault();
                         cell.text(original);

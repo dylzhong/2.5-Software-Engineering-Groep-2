@@ -65,6 +65,7 @@
                             }
                         });
 
+                        //Dit maakt het mogelijk om details van aanvraag te zien
                         $('#table-request-user tbody').on('click', 'tr', function (event) {
                             if ($(event.target).closest('button').length > 0) return;
 
@@ -96,7 +97,7 @@
                             method: "DELETE",
                             success: function (data) {
                                 alert(data);
-                                table.row(row).remove().draw(); // verwijder rij uit de DataTable
+                                table.row(row).remove().draw();
                             },
                             error: function (data) {
                                 alert(data.responseText);

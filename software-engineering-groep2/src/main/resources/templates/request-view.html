@@ -35,6 +35,7 @@
         </div>
         <script>
             function loadRequestDetails() {
+                // Haalt de waarde op van de id-parameter uit de URL van de huidige pagina.
                 const id = new URLSearchParams(window.location.search).get("id");
 
                 $.ajax({
