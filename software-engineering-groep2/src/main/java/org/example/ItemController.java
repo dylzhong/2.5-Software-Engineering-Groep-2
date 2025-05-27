@@ -301,7 +301,7 @@ public class ItemController {
 
 
     /**
-     * Submits the current request for processing and updates the stock.
+     * Submits the current request for processing.
      *
      * @return ResponseEntity indicating success or failure if stock is insufficient.
      */
@@ -327,17 +327,6 @@ public class ItemController {
         );
 
         userRequestList.add(submittedRequest);
-
-        for (ItemDetails i : itemDetails) {
-            for (ItemDetails j : stockList) {
-                if (j.getId().equals(i.getId())) {
-                    if (j.getAmount() >= i.getAmount()) {
-                        j.setAmount(j.getAmount() - i.getAmount());
-                        break;
-                    }
-                }
-            }
-        }
 
         temporaryRequest.getItems().clear();
         return ResponseEntity.status(201).body("Request submitted successfully.");
@@ -479,11 +468,11 @@ public class ItemController {
     }
 
     /**
-     * Updates the status of a request (e.g., Pending → Approved).
+     * Updates the status of a request (e.g., Pending → Approved) and update
      * Accessible by admin roles.
      *
      * @param id The UUID of the request.
-     * @param status The new status value (e.g., Approved, Rejected).
+     * @param status The new status value (e.g., Approved, Rejected) and updates the stock.
      * @return ResponseEntity indicating success or request not found.
      */
     @PostMapping("/request/admin/status")
@@ -491,12 +480,31 @@ public class ItemController {
         for (List<Request> userRequests : requestMap.values()) {
             for (Request r : userRequests) {
                 if (r.getId().equals(id.toString())) {
+
+                    // Alleen voorraad aanpassen als het verzoek goedgekeurd wordt
+                    if (status.equalsIgnoreCase("Approved")) {
+                        for (ItemDetails requestedItem : r.getItems()) {
+                            for (ItemDetails stockItem : stockList) {
+                                if (stockItem.getId().equals(requestedItem.getId())) {
+                                    int newAmount = stockItem.getAmount() - requestedItem.getAmount();
+                                    if (newAmount < 0) {
+                                        return ResponseEntity.status(409)
+                                                .body("Error: Not enough stock available for this order.");
+                                    }
+                                    stockItem.setAmount(newAmount);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
                     r.setStatus(status);
                     return ResponseEntity.ok("Status updated to " + status);
                 }
             }
         }
-        return ResponseEntity.status(404).body("Request not found");
+
+        return ResponseEntity.status(404).body("Error: Request with the given ID not found.");
     }
 
     /**
