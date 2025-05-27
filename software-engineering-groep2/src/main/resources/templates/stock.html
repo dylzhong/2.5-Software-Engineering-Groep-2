@@ -49,7 +49,7 @@
                 <label for="details">Details:</label><br>
                 <input type="text" id="details" required><br>
                 <label for="amount">Amount:</label><br>
-                <input type="number" id="amount" required><br><br>
+                <input type="number" id="amount" min="1" required><br><br>
 
                 <div class="container-button">
                     <button type="button" onclick="addItem()">Submit</button>
@@ -121,6 +121,7 @@
                     success: function (data) {
                         alert(data);
                         closePopUp();
+                        document.getElementById("form-add").reset();
                         loadStock();
                     },
                     error: function (data) {
@@ -130,55 +131,60 @@
             }
 
             function editItem(table) {
-                // Als iemand op een cel in de tabel klikt...
                 $('#table-stock tbody').off('click', 'td').on('click', 'td', function () {
                     const column = table.cell(this).index().column;
 
-                    //Skipt ID-kolom en Actie-kolom
+                    // Skip ID- en Action-kolommen
                     if (column === 0 || column === 4) return;
 
-                    //Cel waarop geklikt is
                     const cell = $(this);
-                    //Bewaar de originele tekst van de cel
                     const original = cell.text();
+                    const columnName = table.column(column).dataSrc();
 
                     function handleKey(e) {
-                        //Als op Enter is gedrukt, wijziging opslaan
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             cell.off('keydown', handleKey);
-                            // Maak de cel weer normaal, niet meer bewerkbaar
                             cell.removeAttr('contenteditable');
 
-                            // Haal de nieuwe tekst op
-                            const newValue = cell.text();
-                            if (newValue !== original) {
-                                // Haal de hele rij op
-                                const row = table.row(cell.closest('tr')).data();
-                                // Haal de kolomnaam op
-                                const columnName = table.column(column).dataSrc();
-                                row[columnName] = newValue;
+                            const newValue = cell.text().trim();
+                            if (newValue === original) return;
 
-                                $.ajax({
-                                    url: "/api/stock/edit",
-                                    method: "PUT",
-                                    data: {
-                                        id: row.id,
-                                        ndc: row.ndc,
-                                        details: row.details,
-                                        amount: row.amount
-                                    },
-                                    success: function (data) {
-                                        alert(data);
-                                    },
-                                    error: function (data) {
-                                        alert(data.responseText);
-                                    }
-                                });
+                            // Validatie op getal als het de amount-kolom is
+                            if (columnName === "amount") {
+                                const parsed = parseInt(newValue);
+                                if (isNaN(parsed) || parsed < 0) {
+                                    alert("Please enter a positive number.");
+                                    cell.text(original);
+                                    return;
+                                }
                             }
+
+                            const row = table.row(cell.closest('tr')).data();
+                            const updatedRow = { ...row };
+                            updatedRow[columnName] = newValue;
+
+                            $.ajax({
+                                url: "/api/stock/edit",
+                                method: "PUT",
+                                data: {
+                                    id: updatedRow.id,
+                                    ndc: updatedRow.ndc,
+                                    details: updatedRow.details,
+                                    amount: updatedRow.amount
+                                },
+                                success: function (data) {
+                                    alert(data);
+                                    row[columnName] = newValue;
+                                    table.row(cell.closest('tr')).invalidate().draw(false);
+                                },
+                                error: function (data) {
+                                    alert(data.responseText);
+                                    cell.text(original); // rollback
+                                }
+                            });
                         }
 
-                        //Als op Escape is gedrukt, wijziging annuleren
                         if (e.key === 'Escape') {
                             e.preventDefault();
                             cell.text(original);
@@ -188,7 +194,6 @@
                     }
 
                     cell.off('keydown').on('keydown', handleKey);
-                    //Maak de cel bewerkbaar
                     cell.attr('contenteditable', 'true').focus();
                 });
             }

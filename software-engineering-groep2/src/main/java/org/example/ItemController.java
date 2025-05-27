@@ -169,6 +169,10 @@ public class ItemController {
             @RequestParam("details") String details,
             @RequestParam("amount") int amount) {
 
+        if (amount < 0) {
+            return ResponseEntity.status(400).body("Error: Please enter a positive number");
+        }
+
         for (ItemDetails x : stockList) {
             if (x.getId().equals(id)) {
                 x.setNdc(ndc);
@@ -327,11 +331,10 @@ public class ItemController {
         for (ItemDetails i : itemDetails) {
             for (ItemDetails j : stockList) {
                 if (j.getId().equals(i.getId())) {
-                    if (j.getAmount() < i.getAmount()) {
-                        return ResponseEntity.status(409).body("Error: Not enough stock for item: " + i.getId());
+                    if (j.getAmount() >= i.getAmount()) {
+                        j.setAmount(j.getAmount() - i.getAmount());
+                        break;
                     }
-                    j.setAmount(j.getAmount() - i.getAmount());
-                    break;
                 }
             }
         }
@@ -353,9 +356,22 @@ public class ItemController {
             @RequestParam("id") String id,
             @RequestParam("amount") int amount) {
 
-        for (ItemDetails x : temporaryRequest.getItems()) {
+        if (amount < 1) {
+            return ResponseEntity.status(400).body("Error: Please enter an amount of at least 1.");
+        }
+
+        for (ItemDetails x : stockList ) {
             if (x.getId().equals(id)) {
-                x.setAmount(amount);
+                if (x.getAmount() < amount) {
+                    return ResponseEntity.status(409)
+                            .body("Error: Not enough stock available for this order.");
+                }
+            }
+        }
+
+        for (ItemDetails y : temporaryRequest.getItems()) {
+            if (y.getId().equals(id)) {
+                y.setAmount(amount);
                 return ResponseEntity.ok("Order successfully updated.");
             }
         }

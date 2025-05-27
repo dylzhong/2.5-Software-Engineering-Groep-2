@@ -318,11 +318,6 @@
 
                             // Validatie: moet een positief getal zijn
                             const parsed = parseInt(newValue);
-                            if (isNaN(parsed) || parsed < 1) {
-                                alert("Amount must be a positive number.");
-                                cell.text(original);
-                                return;
-                            }
 
                             // Stuur update naar de server
                             $.ajax({
